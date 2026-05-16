@@ -23,10 +23,13 @@ class ModelRouteConfig(BaseModel):
     backends: list[str] | None = None
     backend_models: dict[str, str] | None = None
     policy: str = "standard"
+    routing_strategy: str = "priority"
 
 
 class PolicyConfig(BaseModel):
     max_attempts_per_backend: int = 1
+    max_backend_failures_before_cooldown: int = 2
+    backend_cooldown_seconds: int = 300
     retry_on_connection_error: bool = True
     retry_on_timeout: bool = False
     fallback_on_limit: bool = True

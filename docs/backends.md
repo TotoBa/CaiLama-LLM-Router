@@ -79,3 +79,20 @@ llm-router test-backends --config configs/router.local.yaml
 ```
 
 Dies ruft pro Backend `GET <base_url>/models` auf. Bei einer Ollama-Config mit `base_url: http://OLLAMA_PI_IP:11434/v1` ist das also `GET /v1/models`.
+
+## Verteilung ueber mehrere Backends
+
+Backends koennen priorisiert oder verteilt genutzt werden:
+
+- `routing_strategy: "priority"` nutzt die Reihenfolge aus `models.*.backends` bzw. die Backend-Prioritaet.
+- `routing_strategy: "round_robin"` rotiert den ersten Versuch ueber alle verfuegbaren Backends des Modellalias.
+
+Ein Backend gilt temporaer als nicht verfuegbar, wenn es die Fehlerschwelle aus der Policy erreicht:
+
+```yaml
+policies:
+  standard:
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
+```

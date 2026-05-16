@@ -18,6 +18,7 @@ Dein Tool -> "chess-small" -> LLM-Router -> Backend "vm" (deepseek-v4-flash:clou
 - **OpenAI-compatible API** – `/v1/chat/completions`, `/v1/models`, `/health`
 - **Modell-Aliase** – dein Tool fragt `chess-small`, der Router weiß, welches Provider-Modell gemeint ist
 - **Backend-Fallback** – bei Rate-Limits, Verbindungsfehlern oder Crashs automatisch nächstes Backend
+- **Optionale Verteilung** – `round_robin` verteilt Requests ueber alle verfuegbaren Backends
 - **Streaming** – SSE-Stream wird transparent durchgereicht (wichtig für Kimi CLI)
 - **JSONL-Logging** – jede Anfrage wird protokolliert, ohne Prompt-Inhalte (standardmäßig)
 - **Keine Secrets im Repo** – echte Configs und API-Keys werden nie eingecheckt
@@ -162,10 +163,13 @@ models:
     provider_model: "deepseek-v4-flash:cloud"
     backends: ["local", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
 policies:
   standard:
-    max_attempts_per_backend: 1
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true

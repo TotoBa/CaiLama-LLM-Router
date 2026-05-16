@@ -72,6 +72,8 @@ policies:
 
   standard:
     max_attempts_per_backend: 1
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true
@@ -82,6 +84,8 @@ policies:
 
   long_running:
     max_attempts_per_backend: 1
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true

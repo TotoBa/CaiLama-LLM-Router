@@ -3,10 +3,6 @@ from __future__ import annotations
 import pytest
 import respx
 from httpx import Response
-import json
-
-from llm_router.config import load_config
-from llm_router.schemas import RouterConfig
 
 
 @pytest.fixture
@@ -49,14 +45,41 @@ models:
       - openai
       - anthropic
     policy: standard
+  balanced-model:
+    provider_model: balanced-llm
+    backends:
+      - openai
+      - anthropic
+    policy: standard
+    routing_strategy: round_robin
+  cooldown-model:
+    provider_model: cooldown-llm
+    backends:
+      - openai
+      - anthropic
+    policy: cooldown
+    routing_strategy: round_robin
 
 policies:
   standard:
     max_attempts_per_backend: 1
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true
     fallback_on_5xx: false
+    fallback_on_4xx: false
+    fallback_on_model_not_found: false
+    timeout_seconds: 300
+  cooldown:
+    max_attempts_per_backend: 1
+    max_backend_failures_before_cooldown: 1
+    backend_cooldown_seconds: 300
+    retry_on_connection_error: true
+    retry_on_timeout: false
+    fallback_on_limit: true
+    fallback_on_5xx: true
     fallback_on_4xx: false
     fallback_on_model_not_found: false
     timeout_seconds: 300
@@ -142,6 +165,75 @@ def test_chat_completions_fallback_on_429(mock_client):
         assert response.headers["x-llm-router-fallback-used"] == "true"
         assert openai_route.called
         assert anthropic_route.called
+
+
+def test_chat_completions_round_robin_distribution(mock_client):
+    with respx.mock:
+        respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test-openai",
+                "object": "chat.completion",
+                "model": "balanced-llm",
+                "choices": [{"message": {"role": "assistant", "content": "openai"}}]
+            })
+        )
+        respx.post("https://api.anthropic.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test-anthropic",
+                "object": "chat.completion",
+                "model": "balanced-llm",
+                "choices": [{"message": {"role": "assistant", "content": "anthropic"}}]
+            })
+        )
+
+        first = mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "balanced-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        second = mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "balanced-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert first.headers["x-llm-router-backend"] == "openai"
+        assert second.headers["x-llm-router-backend"] == "anthropic"
+        assert first.headers["x-llm-router-fallback-used"] == "false"
+        assert second.headers["x-llm-router-fallback-used"] == "false"
+
+
+def test_chat_completions_skips_backend_during_cooldown(mock_client):
+    with respx.mock:
+        openai_route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(500, json={"error": "internal error"})
+        )
+        anthropic_route = respx.post("https://api.anthropic.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test-anthropic",
+                "object": "chat.completion",
+                "model": "cooldown-llm",
+                "choices": [{"message": {"role": "assistant", "content": "anthropic"}}]
+            })
+        )
+
+        first = mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "cooldown-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        second = mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "cooldown-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert first.headers["x-llm-router-backend"] == "anthropic"
+        assert first.headers["x-llm-router-fallback-used"] == "true"
+        assert second.headers["x-llm-router-backend"] == "anthropic"
+        assert second.headers["x-llm-router-fallback-used"] == "false"
+        assert openai_route.call_count == 1
+        assert anthropic_route.call_count == 2
 
 
 def test_chat_completions_model_mapping(mock_client):

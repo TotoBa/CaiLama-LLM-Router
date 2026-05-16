@@ -43,6 +43,8 @@ backends:
 
 Eine vollstaendige Vorlage liegt in `configs/router.vm-pi.example.yaml`.
 
+Die Vorlage nutzt `routing_strategy: "round_robin"` und verteilt Requests auf alle verfuegbaren Backends. Fehlerhafte Backends werden nach zwei fehlgeschlagenen Versuchen fuer 300 Sekunden uebersprungen und danach automatisch wieder versucht.
+
 ## Installation auf der Router-VM
 
 ```bash
@@ -187,7 +189,7 @@ curl -D - http://ROUTER_VM_IP:18080/v1/chat/completions \
 Wichtige Header:
 
 ```text
-x-llm-router-backend: vm
+x-llm-router-backend: vm oder pi
 x-llm-router-fallback-used: false
 ```
 
@@ -209,6 +211,8 @@ Primaeres Ollama danach wieder starten:
 ```bash
 systemctl --user start ollama.service
 ```
+
+Wenn `backend_cooldown_seconds: 300` gesetzt ist, wird das fehlerhafte Backend erst nach Ablauf des Cooldowns automatisch wieder in die Auswahl genommen.
 
 ## Reboot-Checkliste
 

@@ -35,6 +35,11 @@ def load_config(path: Path | str) -> RouterConfig:
             raise ValueError(
                 f"Model '{model_alias}' references policy '{model_conf.policy}' which is not in policies config."
             )
+        if model_conf.routing_strategy not in {"priority", "round_robin"}:
+            raise ValueError(
+                f"Model '{model_alias}' has unsupported routing_strategy "
+                f"'{model_conf.routing_strategy}'."
+            )
 
     # Ensure at least one enabled backend
     enabled_backends = [b for b in config.backends.values() if b.enabled]

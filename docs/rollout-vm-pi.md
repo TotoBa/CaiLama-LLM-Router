@@ -13,6 +13,8 @@ Clients -> http://ROUTER_VM_IP:18080/v1
 
 Die Router-VM hat Vorrang. Wenn das lokale Ollama auf der VM nicht erreichbar ist oder ein fallbackfaehiger Fehler auftritt, nutzt der Router das Pi-Backend.
 
+Wenn `routing_strategy: "round_robin"` gesetzt ist, werden die Requests ueber VM und Pi verteilt. Faellt ein Host aus, wird auf einen anderen Host ausgewichen. Nach zwei fehlgeschlagenen Versuchen wird der betroffene Host fuer 300 Sekunden uebersprungen und danach automatisch wieder versucht.
+
 ## Vorbereitung
 
 Auf der Router-VM:
@@ -31,6 +33,7 @@ In `configs/router.local.yaml`:
 - `OLLAMA_PI_IP` ersetzen
 - `provider_model`-Werte an `ollama list` anpassen
 - `server.host: "0.0.0.0"` setzen, wenn Clients aus dem LAN zugreifen
+- `routing_strategy: "round_robin"` aktiv lassen, wenn ueber alle Backends verteilt werden soll
 
 ## Autostart auf der VM
 
@@ -125,7 +128,7 @@ curl -D - http://ROUTER_VM_IP:18080/v1/chat/completions \
 Erwartete Header:
 
 ```text
-x-llm-router-backend: vm
+x-llm-router-backend: vm oder pi
 x-llm-router-fallback-used: false
 ```
 
@@ -147,6 +150,8 @@ Primaeres Backend wieder starten:
 ```bash
 systemctl --user start ollama.service
 ```
+
+Bei `backend_cooldown_seconds: 300` bleibt das zuvor fehlerhafte Backend danach noch bis zum Ablauf des Cooldowns aus der Auswahl. Nach Ablauf der 300 Sekunden wird es automatisch wieder versucht.
 
 ## Betriebsbefehle
 

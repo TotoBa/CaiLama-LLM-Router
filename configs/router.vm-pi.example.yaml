@@ -27,35 +27,67 @@ models:
     provider_model: "deepseek-v4-flash:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
   kimi-cli-default:
     provider_model: "kimi-k2.6:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
   chess-router:
     provider_model: "deepseek-v4-flash:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
   chess-small:
     provider_model: "deepseek-v4-flash:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
   chess-large:
     provider_model: "gemma4:31b-cloud"
     backends: ["vm", "pi"]
     policy: "long_running"
+    routing_strategy: "round_robin"
 
   chess-task:
     provider_model: "deepseek-v4-pro:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
+
+  kimi-k2.6:cloud:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
 
 policies:
   standard:
-    max_attempts_per_backend: 1
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true
@@ -65,7 +97,9 @@ policies:
     timeout_seconds: 300
 
   long_running:
-    max_attempts_per_backend: 1
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true

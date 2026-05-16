@@ -62,6 +62,7 @@ models:
     provider_model: "deepseek-v4-flash:cloud"
     backends: ["local", "pi"]
     policy: "standard"
+    routing_strategy: "round_robin"
 
   chess-large:
     provider_model: "gemma4:31b-cloud"
@@ -74,6 +75,23 @@ models:
 - **Backends**: Reihenfolge ist Fallback-Reihenfolge. Fehlt sie, werden alle `enabled` Backends nach `priority` sortiert.
 - Provider-Modelle muessen auf jedem Backend verfuegbar sein, das in `backends` genannt ist
 
+## Verteilung
+
+Standardmaessig nutzt der Router `routing_strategy: "priority"`: der erste verfuegbare Backend-Eintrag wird zuerst versucht, danach kommt Fallback.
+
+Optional kann ein Modell auf alle verfuegbaren Backends verteilt werden:
+
+```yaml
+models:
+  default:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+```
+
+`round_robin` rotiert den ersten Versuch pro Modellalias ueber alle nicht deaktivierten und nicht im Cooldown befindlichen Backends. Wenn der gewaehlte Host fehlschlaegt, wird im selben Request auf ein anderes Backend aus der Liste ausgewichen.
+
 ## Policies
 
 Definiert, bei welchen Fehlern Fallback passiert und wie Retry/Timeout gehandhabt werden:
@@ -81,7 +99,9 @@ Definiert, bei welchen Fehlern Fallback passiert und wie Retry/Timeout gehandhab
 ```yaml
 policies:
   standard:
-    max_attempts_per_backend: 1
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
     retry_on_connection_error: true
     retry_on_timeout: false
     fallback_on_limit: true
@@ -92,8 +112,10 @@ policies:
 
 | Feld | Beschreibung |
 |---|---|
-| `max_attempts_per_backend` | Wie oft dasselbe Backend versucht wird |
-| `retry_on_connection_error` | Nochmal versuchen bei Verbindungsfehler |
+| `max_attempts_per_backend` | Wie oft dasselbe Backend bei Verbindungs- oder Timeoutfehlern innerhalb eines Requests versucht wird |
+| `max_backend_failures_before_cooldown` | Nach wie vielen fehlgeschlagenen Backend-Versuchen ein Backend temporaer uebersprungen wird |
+| `backend_cooldown_seconds` | Wie lange ein Backend nach Erreichen der Fehlerschwelle uebersprungen wird |
+| `retry_on_connection_error` | Gleiches Backend nochmal versuchen bei Verbindungsfehler |
 | `fallback_on_limit` | Fallback bei 429 / Quota / Limit |
 | `fallback_on_5xx` | Fallback bei Serverfehlern |
 | `fallback_on_4xx` | Fallback bei Client-Fehlern (rarely true) |

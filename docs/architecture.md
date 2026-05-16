@@ -39,6 +39,7 @@ Der LLM-Router ist ein **generisches, lokales LLM-Gateway** mit einer OpenAI-kom
 | **Backend** | OpenAI-kompatibler Server (Ollama, OpenRouter, ...) |
 | **Policy** | Verhaltensregeln: Retry, Timeout, Fallback-Bedingungen |
 | **Logger** | JSONL-Logs fuer Anfragen, wenn `logging.jsonl_path` gesetzt ist |
+| **Backend-State** | In-Memory Failure-Zaehler und Cooldown fuer temporaer fehlerhafte Backends |
 
 ## Flow einer Anfrage
 
@@ -49,6 +50,7 @@ Der LLM-Router ist ein **generisches, lokales LLM-Gateway** mit einer OpenAI-kom
 2. Routing
    ├─ "chess-small" → provider_model: "deepseek-v4-flash:cloud"
    ├─ Backends: [vm, pi]
+   ├─ routing_strategy "priority" oder "round_robin"
 3. Backend-Call #1 (vm)
    ├─ Request an lokales VM-Ollama mit model "deepseek-v4-flash:cloud"
    ├─ 429 zurück → Limit erkannt
