@@ -87,6 +87,7 @@ models:
 - **Backends**: Reihenfolge ist Fallback-Reihenfolge. Fehlt sie, werden alle `enabled` Backends nach `priority` sortiert.
 - Provider-Modelle muessen auf jedem Backend verfuegbar sein, das in `backends` genannt ist
 - Soll ein Modell nur ueber einen Host verfuegbar sein, wird nur dieser Backend-Name gesetzt, z.B. `backends: ["vm"]`.
+- Fachliche Rollen wie `chess-coach` oder `chess-vision` sind normale Alias-Namen. Der Router injiziert keine Rollenprompts; Verhalten steuert der aufrufende Client.
 
 ## Verteilung
 

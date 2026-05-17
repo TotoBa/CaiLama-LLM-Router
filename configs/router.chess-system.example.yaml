@@ -49,6 +49,36 @@ models:
     backends: ["local", "pi"]
     policy: "standard"
 
+  chess-coach:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["local", "pi"]
+    policy: "long_running"
+
+  chess-analyst:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["local", "pi"]
+    policy: "long_running"
+
+  chess-critic:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["local", "pi"]
+    policy: "standard"
+
+  chess-vision:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["local", "pi"]
+    policy: "long_running"
+
+  chess-scribe:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["local", "pi"]
+    policy: "standard"
+
+  chess-researcher:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["local", "pi"]
+    policy: "standard"
+
 policies:
   interactive:
     max_attempts_per_backend: 1

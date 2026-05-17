@@ -123,9 +123,15 @@ LLM_MODEL_ROUTER=chess-router
 LLM_MODEL_SMALL=chess-small
 LLM_MODEL_LARGE=chess-large
 LLM_MODEL_TASK=chess-task
+LLM_MODEL_COACH=chess-coach
+LLM_MODEL_ANALYST=chess-analyst
+LLM_MODEL_CRITIC=chess-critic
+LLM_MODEL_VISION=chess-vision
+LLM_MODEL_SCRIBE=chess-scribe
+LLM_MODEL_RESEARCHER=chess-researcher
 ```
 
-Das Schachsystem kennt nur logische Rollen (`small`, `large`, `task`). Der Router kümmert sich um das echte Modell und das Backend.
+Das Schachsystem kennt nur logische Rollen (`small`, `large`, `task`, `coach`, `analyst`, `critic`, `vision`, `scribe`, `researcher`). Der Router kümmert sich um das echte Modell und das Backend. Rollenverhalten wird vom Schachsystem gepromptet; der Router erzwingt keine Schachlogik.
 
 [Mehr Details in docs/chess-system.md](docs/chess-system.md)
 

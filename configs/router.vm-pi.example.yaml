@@ -59,6 +59,42 @@ models:
     policy: "standard"
     routing_strategy: "round_robin"
 
+  chess-coach:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  chess-analyst:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  chess-critic:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  chess-vision:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  chess-scribe:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  chess-researcher:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
   kimi-k2.6:cloud:
     provider_model: "kimi-k2.6:cloud"
     backends: ["vm", "pi"]

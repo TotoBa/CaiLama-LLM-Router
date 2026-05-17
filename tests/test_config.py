@@ -277,3 +277,28 @@ logging:
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         load_config(Path("/nonexistent/config.yaml"))
+
+
+def test_chess_alias_examples_include_dedicated_roles():
+    repo_root = Path(__file__).resolve().parents[1]
+    expected_models = {
+        "chess-router": "deepseek-v4-flash:cloud",
+        "chess-small": "deepseek-v4-flash:cloud",
+        "chess-large": "gemma4:31b-cloud",
+        "chess-task": "deepseek-v4-pro:cloud",
+        "chess-coach": "gemma4:31b-cloud",
+        "chess-analyst": "qwen3.5:397b-cloud",
+        "chess-critic": "deepseek-v4-pro:cloud",
+        "chess-vision": "gemma4:31b-cloud",
+        "chess-scribe": "deepseek-v4-flash:cloud",
+        "chess-researcher": "deepseek-v4-pro:cloud",
+    }
+
+    for config_name in (
+        "router.chess-system.example.yaml",
+        "router.vm-pi.example.yaml",
+    ):
+        config = load_config(repo_root / "configs" / config_name)
+        for alias, provider_model in expected_models.items():
+            assert alias in config.models
+            assert config.models[alias].provider_model == provider_model

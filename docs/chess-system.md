@@ -5,10 +5,12 @@
 Das Schachsystem spricht nicht direkt mit Ollama. Es spricht nur mit dem Router.
 
 Das Schachsystem kennt:
-- logische Rollen (`router`, `small`, `large`, `task`)
-- Modell-Aliase (`chess-router`, `chess-small`, `chess-large`, `chess-task`)
+- logische Rollen (`router`, `small`, `large`, `task`, `coach`, `analyst`, `critic`, `vision`, `scribe`, `researcher`)
+- Modell-Aliase (`chess-router`, `chess-small`, `chess-large`, `chess-task`, `chess-coach`, `chess-analyst`, `chess-critic`, `chess-vision`, `chess-scribe`, `chess-researcher`)
 
 Es weiß **nicht**, welches echte Modell dahinter steht und ob es lokal oder auf dem Pi läuft.
+Rollenverhalten wie Didaktik, Spoilerarmut, Quellenattribution oder vorsichtiger Umgang mit Diagrammen bleibt Aufgabe des aufrufenden Schachsystems bzw. seiner Prompts. Der Router mappt nur Aliase auf Provider-Modelle und Backends.
+Alle Schachrollen sollten vom Client so gepromptet werden, dass Nutzerantworten auf Deutsch erfolgen.
 
 ## Env-Konfiguration im Schachsystem
 
@@ -20,6 +22,12 @@ LLM_MODEL_ROUTER=chess-router
 LLM_MODEL_SMALL=chess-small
 LLM_MODEL_LARGE=chess-large
 LLM_MODEL_TASK=chess-task
+LLM_MODEL_COACH=chess-coach
+LLM_MODEL_ANALYST=chess-analyst
+LLM_MODEL_CRITIC=chess-critic
+LLM_MODEL_VISION=chess-vision
+LLM_MODEL_SCRIBE=chess-scribe
+LLM_MODEL_RESEARCHER=chess-researcher
 ```
 
 ## Modellzuordnung
@@ -30,6 +38,12 @@ LLM_MODEL_TASK=chess-task
 | small | `chess-small` | `deepseek-v4-flash:cloud` | Klassifikation, Zugbewertung |
 | large | `chess-large` | `gemma4:31b-cloud` | Lange Analyse, Kommentierung |
 | task | `chess-task` | `deepseek-v4-pro:cloud` | PGN-Kommentare, Zusammenfassungen |
+| coach | `chess-coach` | `gemma4:31b-cloud` | Didaktischer Trainingscoach, deutsch, spoilerarm, Nutzerstaerke beachten |
+| analyst | `chess-analyst` | `qwen3.5:397b-cloud` | Tiefe Analyse aus Engine-, Maia-, Board-Truth-, PGN- und Trainingskontext |
+| critic | `chess-critic` | `deepseek-v4-pro:cloud` | Widersprueche, unbelegte Aussagen und riskante Tool-/Analyseausgaben pruefen |
+| vision | `chess-vision` | `gemma4:31b-cloud` | OCR-, Bild- und Diagrammkontext; vorsichtig, keine geratenen FENs |
+| scribe | `chess-scribe` | `deepseek-v4-flash:cloud` | Strukturierte deutsche Berichte, PGN-Kommentare, Lernkarten und Konsolentexte |
+| researcher | `chess-researcher` | `deepseek-v4-pro:cloud` | Vorhandene Quellen-, Such- und Knowledge-Kontexte mit Attribution verdichten |
 
 Diese Zuordnung lebt **nur im Router** – das Schachsystem fragt einfach `chess-small` und bekommt eine Antwort.
 
@@ -53,6 +67,36 @@ models:
     policy: "long_running"
 
   chess-task:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+
+  chess-coach:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+
+  chess-analyst:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+
+  chess-critic:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+
+  chess-vision:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+
+  chess-scribe:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+
+  chess-researcher:
     provider_model: "deepseek-v4-pro:cloud"
     backends: ["vm", "pi"]
     policy: "standard"
