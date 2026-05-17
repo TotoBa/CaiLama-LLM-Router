@@ -35,6 +35,7 @@ In `configs/router.local.yaml`:
 - `server.host: "0.0.0.0"` setzen, wenn Clients aus dem LAN zugreifen
 - `routing_strategy: "round_robin"` aktiv lassen, wenn ueber alle Backends verteilt werden soll
 - `runtime.request_timeout_seconds: null` aktiv lassen, damit lange LLM-Antworten nicht vom Router abgebrochen werden
+- Modelle, die nur auf der VM laufen sollen, mit `backends: ["vm"]` eintragen
 
 ## Autostart auf der VM
 
@@ -53,6 +54,16 @@ systemctl --user daemon-reload
 systemctl --user enable --now ollama.service
 systemctl --user enable --now llm-router.service
 ```
+
+Ollama sollte pro Host nur ein Modell gleichzeitig laden und nur einen Lauf gleichzeitig ausfuehren. Die Beispiel-Services setzen deshalb:
+
+```ini
+Environment=OLLAMA_MAX_LOADED_MODELS=1
+Environment=OLLAMA_NUM_PARALLEL=1
+Environment=OLLAMA_MAX_QUEUE=2
+```
+
+Damit duerfen maximal zwei weitere Requests in Ollama warten; bei mehr Last antwortet Ollama mit Ueberlastung und der Router kann fallbacken oder den letzten Backend-Fehler zurueckgeben.
 
 Ein Admin aktiviert Linger, damit die Dienste nach einem Reboot ohne Login starten:
 
@@ -96,7 +107,24 @@ for model in \
   kimi-k2.6:cloud \
   deepseek-v4-pro:cloud \
   deepseek-v4-flash:cloud \
-  gemma4:31b-cloud
+  gemma4:31b-cloud \
+  qwen3.5:397b-cloud \
+  glm-5.1:cloud \
+  minimax-m2.7:cloud \
+  nemotron-3-super:cloud \
+  gpt-oss:20b-cloud \
+  qwen3-vl:4b
+do
+  ollama pull "$model"
+done
+```
+
+Nur auf der VM:
+
+```bash
+for model in \
+  gpt-oss-safeguard:20b \
+  gemma4:e2b
 do
   ollama pull "$model"
 done

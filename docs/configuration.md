@@ -86,6 +86,7 @@ models:
 - **Provider-Modell** (`deepseek-v4-flash:cloud`) ist das, was das Backend versteht
 - **Backends**: Reihenfolge ist Fallback-Reihenfolge. Fehlt sie, werden alle `enabled` Backends nach `priority` sortiert.
 - Provider-Modelle muessen auf jedem Backend verfuegbar sein, das in `backends` genannt ist
+- Soll ein Modell nur ueber einen Host verfuegbar sein, wird nur dieser Backend-Name gesetzt, z.B. `backends: ["vm"]`.
 
 ## Verteilung
 

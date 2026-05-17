@@ -45,6 +45,8 @@ Eine vollstaendige Vorlage liegt in `configs/router.vm-pi.example.yaml`.
 
 Die Vorlage nutzt `routing_strategy: "round_robin"` und verteilt Requests auf alle verfuegbaren Backends. Fehlerhafte Backends werden nach zwei fehlgeschlagenen Versuchen fuer 300 Sekunden uebersprungen und danach automatisch wieder versucht.
 
+Modelle koennen gezielt auf einzelne Hosts beschraenkt werden. Beispiel: `backends: ["vm"]` macht ein Modell nur ueber das VM-Ollama verfuegbar.
+
 ## Installation auf der Router-VM
 
 ```bash
@@ -104,6 +106,16 @@ systemctl --user status ollama.service llm-router.service
 journalctl --user -u llm-router.service -f
 ```
 
+Die Ollama-Service-Beispiele setzen bewusst:
+
+```ini
+Environment=OLLAMA_MAX_LOADED_MODELS=1
+Environment=OLLAMA_NUM_PARALLEL=1
+Environment=OLLAMA_MAX_QUEUE=2
+```
+
+Damit bleibt pro Host nur ein Modell geladen und ein Modell verarbeitet nur eine Anfrage gleichzeitig. Zwei weitere Requests duerfen in Ollama warten; danach liefert Ollama einen Ueberlastungsfehler, den der Router wie andere Backend-Fehler behandeln kann.
+
 ## Router als System-Service
 
 Wenn keine Accountbindung an Ollama noetig ist:
@@ -148,19 +160,36 @@ Der Socket sollte auf `*:11434` oder auf der LAN-IP lauschen. Kein Port-Forwardi
 
 ## Modelle synchronisieren
 
-Auf jedem Ollama-Host dieselben Provider-Modelle bereitstellen, die in `models.*.provider_model` genutzt werden:
+Auf jedem Ollama-Host dieselben Provider-Modelle bereitstellen, die in `models.*.provider_model` genutzt werden und deren `backends` diesen Host enthalten:
 
 ```bash
 for model in \
   kimi-k2.6:cloud \
   deepseek-v4-pro:cloud \
   deepseek-v4-flash:cloud \
-  gemma4:31b-cloud
+  gemma4:31b-cloud \
+  qwen3.5:397b-cloud \
+  glm-5.1:cloud \
+  minimax-m2.7:cloud \
+  nemotron-3-super:cloud \
+  gpt-oss:20b-cloud \
+  qwen3-vl:4b
 do
   ollama pull "$model"
 done
 
 ollama list
+```
+
+Nur auf der VM:
+
+```bash
+for model in \
+  gpt-oss-safeguard:20b \
+  gemma4:e2b
+do
+  ollama pull "$model"
+done
 ```
 
 Zusaetzliche Modelle duerfen installiert bleiben. Der Router nutzt nur die Modelle, die in der Config referenziert sind.

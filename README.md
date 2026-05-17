@@ -195,6 +195,8 @@ Für langsame lokale LLMs kann `runtime.request_timeout_seconds: null` gesetzt b
 
 Wenn alle sofort nutzbaren Backends mit Fehlern antworten, gibt der Router standardmaessig den letzten Backend-Fehler unveraendert an den Client zurueck. Das verhindert, dass Clients wie Kimi auf einen generischen Router-Fehler warten oder unklar weiterlaufen. Pro Policy kann das mit `return_last_error_on_exhausted_backends: false` deaktiviert werden.
 
+Ein Modell kann gezielt nur auf einem Backend angeboten werden, z.B. `backends: ["vm"]`. Fuer knappe Ollama-Hosts setzen die systemd-Beispiele `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_NUM_PARALLEL=1` und `OLLAMA_MAX_QUEUE=2`.
+
 ---
 
 ## Sicherheit

@@ -83,6 +83,52 @@ models:
     policy: "long_running"
     routing_strategy: "round_robin"
 
+  qwen3.5:397b-cloud:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:
+    provider_model: "glm-5.1:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["vm", "pi"]
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  gpt-oss:20b-cloud:
+    provider_model: "gpt-oss:20b-cloud"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  qwen3-vl:4b:
+    provider_model: "qwen3-vl:4b"
+    backends: ["vm", "pi"]
+    policy: "long_running"
+    routing_strategy: "round_robin"
+
+  gpt-oss-safeguard:20b:
+    provider_model: "gpt-oss-safeguard:20b"
+    backends: ["vm"]
+    policy: "long_running"
+
+  gemma4:e2b:
+    provider_model: "gemma4:e2b"
+    backends: ["vm"]
+    policy: "long_running"
+
 policies:
   standard:
     max_attempts_per_backend: 2
