@@ -11,11 +11,17 @@ LLM-Router. Sie ersetzt keine Master-Planung und enthaelt keine Secrets.
 - [ ] Fallback-Verhalten dokumentieren und testen: Rate-Limits,
   Connection-Errors, 5xx-Antworten und ausgeschoepfte Backends muessen
   vorhersagbare Client-Antworten liefern.
+- [ ] Exhausted-Backend-Verhalten pruefen: Policies muessen klar festlegen, ob
+  der letzte Backend-Fehler unveraendert an Clients zurueckgegeben wird oder
+  ein Router-Fehler entsteht.
 - [ ] Health- und Smoke-Checks fuer CaiLama-Verbraucher stabil halten:
   `/health`, `/v1/models` und `/v1/chat/completions` duerfen keine lokalen
   Provider-Secrets voraussetzen.
 - [ ] JSONL-Logging regelmaessig gegen Datenschutzregeln pruefen:
   Prompt-Inhalte, Responses und Header bleiben standardmaessig aus Logs.
+- [ ] Router-Observability definieren: privacy-safe KPIs fuer Backend-Ausfaelle,
+  Fallbacks, Cooldowns, Modellalias-Nutzung und Latenzen sammeln, ohne
+  Prompt-/Response-Inhalte zu loggen.
 
 ## CaiLama-Integration
 
@@ -25,6 +31,9 @@ LLM-Router. Sie ersetzt keine Master-Planung und enthaelt keine Secrets.
   `chess-researcher`.
 - [ ] Dokumentieren, welche Alias-Policies fuer Training, Analyse,
   Recherche und Kimi-CLI empfohlen sind.
+- [ ] `researcher`- und `analyst`-Rollen fuer RAG-gestuetzte Analysepakete
+  stabil halten; Retrieval-Kontext bleibt Aufgabe von CaiLama/CaiLama-Search,
+  nicht des Routers.
 - [ ] Smoke-Test-Befehl fuer das CaiLama-Setup ohne echte Provider-Secrets
   dokumentieren.
 
