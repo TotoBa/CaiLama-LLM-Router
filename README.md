@@ -4,6 +4,8 @@
   <img src="https://raw.githubusercontent.com/TotoBa/CaiLama/main/img/logo-big.png" alt="CaiLama Logo" width="600">
 </p>
 
+Webseite: <https://cailama.org/>
+
 Generic local LLM routing gateway with OpenAI-compatible API, model aliases, backend fallback and JSONL logging.
 
 ## Was macht der Router?
