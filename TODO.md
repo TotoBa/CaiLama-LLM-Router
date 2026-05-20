@@ -73,9 +73,16 @@ Arbeite diese Reihenfolge ab und halte den Router strikt als Infrastruktur:
       das erlaubt dynamische Rollen ohne harte Router-Konfiguration.
     - Bugfix: `resolve_backend_model` gibt jetzt den Alias selbst zurück, wenn kein
       Router-Eintrag existiert, anstatt einen KeyError zu werfen.
-3. Privacy-safe Observability definieren und vorbereiten: Backend-Ausfaelle,
+3. [x] Privacy-safe Observability definieren und vorbereiten: Backend-Ausfaelle,
    Fallbacks, Cooldowns, Alias-Nutzung und Latenzen erfassen, ohne Prompt-,
    Response- oder Header-Inhalte zu loggen.
+    - `log_backend_state_change` eingefuehrt: erzeugt JSONL-Events bei Cooldown-Starts
+      (`event: backend_state_change`, `state: cooldown_started`, `cooldown_seconds`)
+      ohne jegliche Prompt-/Response-Inhalte.
+    - Neu: `tests/test_logging_jsonl.py` – 3 Tests:
+      - `test_json_formatter_outputs_dict_directly`
+      - `test_log_backend_state_change_no_sensitive_content`
+      - `test_log_request_privacy_defaults`
 4. Smoke-/Config-Pruefung ohne echte Provider-Secrets dokumentieren und
    automatisierbar halten.
 

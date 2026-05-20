@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from llm_router.backends import backend_order, resolve_backend_model
 from llm_router.errors import RouterError, error_response
 from llm_router.fallback import looks_like_limit_error, should_fallback
-from llm_router.logging_jsonl import log_request
+from llm_router.logging_jsonl import log_backend_state_change, log_request
 from llm_router.schemas import BackendConfig, PolicyConfig, RouterConfig
 
 router = APIRouter()
@@ -164,6 +164,15 @@ def _record_backend_failure(model_alias: str, backend_name: str, policy: PolicyC
     if state.failures >= policy.max_backend_failures_before_cooldown:
         state.failures = 0
         state.cooldown_until = time.monotonic() + policy.backend_cooldown_seconds
+        logger = _get_logger()
+        if logger:
+            log_backend_state_change(
+                logger,
+                backend=backend_name,
+                model_alias=model_alias,
+                state="cooldown_started",
+                cooldown_seconds=policy.backend_cooldown_seconds,
+            )
 
 
 def _select_backends(model_alias: str, config: RouterConfig) -> list[str]:

@@ -36,6 +36,27 @@ def init_logger(config: RouterConfig) -> logging.Logger:
     return logger
 
 
+def log_backend_state_change(
+    logger: logging.Logger,
+    *,
+    backend: str,
+    model_alias: str,
+    state: str,  # e.g. "cooldown_started" or "cooldown_ended"
+    cooldown_seconds: int | None = None,
+) -> None:
+    """Log a backend state change event without any prompt/response content."""
+    entry: dict[str, Any] = {
+        "timestamp": time.time(),
+        "event": "backend_state_change",
+        "backend": backend,
+        "model_alias": model_alias,
+        "state": state,
+    }
+    if cooldown_seconds is not None:
+        entry["cooldown_seconds"] = cooldown_seconds
+    logger.info(entry)
+
+
 def log_request(
     logger: logging.Logger,
     *,
