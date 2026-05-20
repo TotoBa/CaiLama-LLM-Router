@@ -64,10 +64,15 @@ Arbeite diese Reihenfolge ab und halte den Router strikt als Infrastruktur:
     - Retry auf Connection-Error: neu (`test_chat_completions_retries_connection_error`).
     - 5xx-Fallback: neu (`test_chat_completions_fallback_on_5xx`).
     - Exhausted backends: vorhanden (`test_chat_completions_returns_last_backend_error_when_exhausted`).
-2. Rollen- und Modell-Aliase gegen CaiLama-Erwartungen abgleichen:
+2. [x] Rollen- und Modell-Aliase gegen CaiLama-Erwartungen abgleichen:
    `chess-router`, `chess-small`, `chess-large`, `chess-task`,
    `chess-coach`, `chess-analyst`, `chess-critic`, `chess-vision`,
    `chess-scribe`, `chess-researcher`.
+    - Aliase sind in beiden Example-Configs vorhanden (`test_chess_alias_examples_include_dedicated_roles`).
+    - `unknown_model_strategy: passthrough` ist jetzt validiert und getestet;
+      das erlaubt dynamische Rollen ohne harte Router-Konfiguration.
+    - Bugfix: `resolve_backend_model` gibt jetzt den Alias selbst zurück, wenn kein
+      Router-Eintrag existiert, anstatt einen KeyError zu werfen.
 3. Privacy-safe Observability definieren und vorbereiten: Backend-Ausfaelle,
    Fallbacks, Cooldowns, Alias-Nutzung und Latenzen erfassen, ohne Prompt-,
    Response- oder Header-Inhalte zu loggen.

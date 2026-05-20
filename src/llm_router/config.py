@@ -46,6 +46,14 @@ def load_config(path: Path | str) -> RouterConfig:
     if not enabled_backends:
         raise ValueError("At least one enabled backend is required in configuration.")
 
+    # Validate runtime options
+    strategy = config.runtime.unknown_model_strategy
+    if strategy not in {"error", "passthrough"}:
+        raise ValueError(
+            f"Invalid unknown_model_strategy '{strategy}'. "
+            f"Must be either 'error' or 'passthrough'."
+        )
+
     return config
 
 

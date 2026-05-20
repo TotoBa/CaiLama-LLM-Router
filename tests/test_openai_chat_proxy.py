@@ -477,3 +477,99 @@ async def test_chat_completions_all_backends_fail(mock_client):
         assert response.json() == {"error": "internal error"}
         assert response.headers["x-llm-router-backend"] == "anthropic"
         assert response.headers["x-llm-router-returned-last-error"] == "true"
+
+
+# Fixtures for passthrough strategy
+
+@pytest.fixture
+def mock_config_passthrough_path(tmp_path):
+    config_content = """
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  request_timeout_seconds: 600
+  connect_timeout_seconds: 10
+  unknown_model_strategy: passthrough
+
+backends:
+  openai:
+    type: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    priority: 10
+  anthropic:
+    type: openai_compatible
+    base_url: https://api.anthropic.com/v1
+    api_key_env: ANTHROPIC_API_KEY
+    priority: 20
+
+models:
+  default:
+    provider_model: default-llm
+    backends:
+      - openai
+    policy: standard
+
+policies:
+  standard:
+    max_attempts_per_backend: 1
+    retry_on_connection_error: true
+    retry_on_timeout: false
+    fallback_on_limit: true
+    fallback_on_5xx: true
+    fallback_on_4xx: false
+    fallback_on_model_not_found: false
+    return_last_error_on_exhausted_backends: true
+    timeout_seconds: 300
+
+limit_detection:
+  status_codes:
+    - 429
+  body_markers:
+    - "rate limit"
+
+logging:
+  level: INFO
+"""
+    path = tmp_path / "passthrough_router.yaml"
+    path.write_text(config_content)
+    return path
+
+
+@pytest.fixture
+def mock_passthrough_app(mock_config_passthrough_path):
+    from llm_router.config import load_config
+    from llm_router.app import create_app
+    return create_app(config=load_config(mock_config_passthrough_path))
+
+
+@pytest.fixture
+async def mock_passthrough_client(mock_passthrough_app):
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=mock_passthrough_app),
+        base_url="http://test",
+    ) as client:
+        yield client
+
+
+async def test_chat_completions_passthrough_unknown_model(mock_passthrough_client):
+    with respx.mock:
+        route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test",
+                "object": "chat.completion",
+                "model": "unknown-model",
+                "choices": [{"message": {"role": "assistant", "content": "Hello!"}}]
+            })
+        )
+        response = await mock_passthrough_client.post(
+            "/v1/chat/completions",
+            json={"model": "unknown-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert response.status_code == 200
+        assert response.json()["model"] == "unknown-model"
+        assert response.headers["x-llm-router-backend"] == "openai"
+        assert response.headers.get("x-llm-router-fallback-used") == "false"
+        assert route.called

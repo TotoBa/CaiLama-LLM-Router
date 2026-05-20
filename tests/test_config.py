@@ -274,6 +274,47 @@ logging:
         load_config(path)
 
 
+def test_invalid_unknown_model_strategy(tmp_path: Path):
+    config_content = """
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  request_timeout_seconds: 600
+  unknown_model_strategy: invalid
+
+backends:
+  openai:
+    type: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    priority: 10
+
+models:
+  gpt-4o:
+    provider_model: gpt-4o
+    backends:
+      - openai
+    policy: standard
+
+policies:
+  standard:
+    max_attempts_per_backend: 1
+
+limit_detection:
+  status_codes: [429]
+  body_markers: []
+
+logging:
+  level: INFO
+"""
+    path = tmp_path / "bad_router.yaml"
+    path.write_text(config_content)
+    with pytest.raises(ValueError, match="Invalid unknown_model_strategy"):
+        load_config(path)
+
+
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         load_config(Path("/nonexistent/config.yaml"))

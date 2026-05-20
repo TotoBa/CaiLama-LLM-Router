@@ -30,11 +30,13 @@ nano configs/router.local.yaml
 runtime:
   request_timeout_seconds: null
   connect_timeout_seconds: 10
+  unknown_model_strategy: "error"
 ```
 
 - `request_timeout_seconds: null` oder `0` bedeutet: kein Timeout fuer einen laufenden Backend-Request. Das ist fuer lokale oder langsame LLMs sinnvoll, weil der Router nicht abbrechen soll, solange das Backend die Verbindung haelt.
 - `connect_timeout_seconds` begrenzt nur den Verbindungsaufbau. Damit werden tote Hosts weiter schnell erkannt und Fallback kann greifen.
 - Ein positiver Wert fuer `request_timeout_seconds` setzt wieder einen Read/Write/Pool-Timeout fuer Backend-Requests.
+- `unknown_model_strategy` definiert das Verhalten, wenn ein Client ein Modell anfragt, das in `models` nicht definiert ist. `error` (Standard) gibt 400 zurück. `passthrough` leitet den Request an das erste verfügbare Backend durch; der Modell-Name wird unverändert an das Backend weitergereicht. Das ist nützlich, wenn CaiLama dynamische Rollen oder neue Modell-Namen verwendet, die noch nicht hart im Router konfiguriert sind.
 
 ## Server
 
