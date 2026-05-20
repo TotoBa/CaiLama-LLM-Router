@@ -21,23 +21,29 @@ Vor Arbeitsbeginn lesen:
 
 ## Naechster Arbeitsschritt
 
-- [ ] Streaming-Fehlerbehandlung klaeren und implementieren: `500`-Antworten
+- [x] Streaming-Fehlerbehandlung klaeren und implementieren: `500`-Antworten
   innerhalb eines `stream: true`-Flows werden transparent durchgereicht, aber
   Clients erkennen den Router-Header `x-llm-router-returned-last-error` nicht im
   SSE-Format. Entscheiden und testen, ob ein `data: {"error": ...}` Chunk oder
   ein regulaerer `503`-Abbruch der richtige Vertrag ist.
-- [ ] Config-Hot-Reload pruefen: `reload_config_on_request: true` ist definiert,
+- [x] Config-Hot-Reload pruefen: `reload_config_on_request: true` ist definiert,
   aber die Config wird beim App-Start einmalig geladen. Entscheiden, ob
   Hot-Reload sinnvoll ist, und `_get_config()` entsprechend testen und
   implementieren.
-- [ ] Backend-spezifisches Modell-Mapping per Alias absichern:
+- [x] Backend-spezifisches Modell-Mapping per Alias absichern:
   `backend_models` existiert in `ModelRouteConfig`, aber es fehlt ein echter
   Test fuer unterschiedliche Provider-Modellnamen je Backend, z.B.
   `chess-small` auf `vm` und `pi`.
-- [ ] Optionalen Prometheus-Exporter bewerten: `/metrics` liefert aktuell JSON.
+- [x] Optionalen Prometheus-Exporter bewerten: `/metrics` liefert aktuell JSON.
   Wenn noetig, zusaetzliches `text/plain`-Format bereitstellen.
-- [ ] `mypy src` bereinigen: bekannte Typfehler bei RootModel-Typen,
+- [x] `mypy src` bereinigen: bekannte Typfehler bei RootModel-Typen,
   YAML-Stubs und RouterError-Argumentreihenfolge beheben.
+
+## Verifizierter Stand
+
+- `uv run --extra dev pytest -q`: 55 Tests passed.
+- `uv run --extra dev mypy src`: no issues found.
+- `uv run --extra dev ruff check .`: All checks passed.
 
 ## Kimi-Handoff
 

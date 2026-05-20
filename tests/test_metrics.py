@@ -3,7 +3,7 @@ from __future__ import annotations
 import respx
 from httpx import Response
 
-from llm_router.metrics import get_metrics, init_metrics
+from llm_router.metrics import get_metrics, init_metrics, snapshot_to_prometheus
 
 
 class TestRequestMetrics:
@@ -79,6 +79,34 @@ async def test_metrics_endpoint(async_client):
     assert "response" not in data
     assert "authorization" not in data
     assert data["timestamp"] > 0
+
+
+async def test_metrics_endpoint_prometheus_format(async_client):
+    init_metrics()
+    get_metrics().record_request(
+        alias="chess-small",
+        backend="openai",
+        latency_ms=42.0,
+        success=True,
+        fallback_used=False,
+        limit_detected=False,
+    )
+
+    resp = await async_client.get("/metrics?format=prometheus")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("text/plain")
+    assert "llm_router_requests_total 1" in resp.text
+    assert 'llm_router_alias_requests_total{alias="chess-small"} 1' in resp.text
+    assert "prompt" not in resp.text
+
+
+def test_snapshot_to_prometheus_is_privacy_safe():
+    m = init_metrics()
+    m.record_backend_failure("openai")
+    text = snapshot_to_prometheus(m.snapshot())
+    assert "llm_router_backend_failures_total" in text
+    assert "prompt" not in text
+    assert "authorization" not in text
 
 
 async def test_metrics_endpoint_resets_on_init(async_client):

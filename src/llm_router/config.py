@@ -31,6 +31,14 @@ def load_config(path: Path | str) -> RouterConfig:
                         f"Model '{model_alias}' references disabled backend '{backend_name}'."
                     )
 
+        if model_conf.backend_models:
+            for backend_name in model_conf.backend_models:
+                if backend_name not in config.backends:
+                    raise ValueError(
+                        f"Model '{model_alias}' references backend model for "
+                        f"unknown backend '{backend_name}'."
+                    )
+
         if model_conf.policy not in config.policies:
             raise ValueError(
                 f"Model '{model_alias}' references policy '{model_conf.policy}' which is not in policies config."

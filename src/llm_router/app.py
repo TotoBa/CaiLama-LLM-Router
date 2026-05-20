@@ -5,6 +5,7 @@ from __future__ import annotations
 import httpx
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from pathlib import Path
 
 from llm_router.config import load_config
 from llm_router.errors import RouterError, error_response
@@ -22,10 +23,11 @@ def _optional_timeout_seconds(value: int | None) -> float | None:
 
 def create_app(config: RouterConfig | None = None) -> FastAPI:
     """Create a FastAPI app with the given (or loaded) configuration."""
+    config_path: Path | None = None
     if config is None:
         import os
-        default_path = os.environ.get("LLM_ROUTER_CONFIG", "configs/router.local.yaml")
-        config = load_config(default_path)
+        config_path = Path(os.environ.get("LLM_ROUTER_CONFIG", "configs/router.local.yaml"))
+        config = load_config(config_path)
 
     logger = init_logger(config)
     httpx_client = httpx.AsyncClient(
@@ -35,7 +37,7 @@ def create_app(config: RouterConfig | None = None) -> FastAPI:
         )
     )
 
-    set_config(config)
+    set_config(config, config_path=config_path)
     set_http_client(httpx_client)
     set_logger(logger)
     init_metrics()
@@ -52,6 +54,7 @@ def create_app(config: RouterConfig | None = None) -> FastAPI:
 
     # expose config and client so CLI / tests can access them
     app.state.config = config
+    app.state.config_path = config_path
     app.state.httpx_client = httpx_client
     app.state.logger = logger
 

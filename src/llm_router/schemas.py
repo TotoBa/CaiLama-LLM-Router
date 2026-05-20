@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, RootModel
 
 
@@ -61,36 +63,42 @@ class RuntimeConfig(BaseModel):
     unknown_model_strategy: str = "error"
 
 
-class RouterConfig(RootModel[dict[str, object]]):
-    root: dict[str, object]
+class RouterConfig(RootModel[dict[str, Any]]):
+    root: dict[str, Any]
+
+    @staticmethod
+    def _section(raw: Any) -> dict[str, Any]:
+        return raw if isinstance(raw, dict) else {}
 
     @property
     def server(self) -> ServerConfig:
-        return ServerConfig.model_validate(self.root.get("server", {}))
+        return ServerConfig.model_validate(self._section(self.root.get("server")))
 
     @property
     def runtime(self) -> RuntimeConfig:
-        return RuntimeConfig.model_validate(self.root.get("runtime", {}))
+        return RuntimeConfig.model_validate(self._section(self.root.get("runtime")))
 
     @property
     def backends(self) -> dict[str, BackendConfig]:
-        raw = self.root.get("backends", {})
+        raw = self._section(self.root.get("backends"))
         return {k: BackendConfig.model_validate(v) for k, v in raw.items()}
 
     @property
     def models(self) -> dict[str, ModelRouteConfig]:
-        raw = self.root.get("models", {})
+        raw = self._section(self.root.get("models"))
         return {k: ModelRouteConfig.model_validate(v) for k, v in raw.items()}
 
     @property
     def policies(self) -> dict[str, PolicyConfig]:
-        raw = self.root.get("policies", {})
+        raw = self._section(self.root.get("policies"))
         return {k: PolicyConfig.model_validate(v) for k, v in raw.items()}
 
     @property
     def limit_detection(self) -> LimitDetectionConfig:
-        return LimitDetectionConfig.model_validate(self.root.get("limit_detection", {}))
+        return LimitDetectionConfig.model_validate(
+            self._section(self.root.get("limit_detection"))
+        )
 
     @property
     def logging(self) -> LoggingConfig:
-        return LoggingConfig.model_validate(self.root.get("logging", {}))
+        return LoggingConfig.model_validate(self._section(self.root.get("logging")))

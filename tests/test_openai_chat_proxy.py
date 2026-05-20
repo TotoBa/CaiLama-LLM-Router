@@ -479,6 +479,27 @@ async def test_chat_completions_all_backends_fail(mock_client):
         assert response.headers["x-llm-router-returned-last-error"] == "true"
 
 
+async def test_streaming_backend_error_is_returned_as_sse(mock_client):
+    with respx.mock:
+        respx.post("https://api.anthropic.com/v1/chat/completions").mock(
+            return_value=Response(500, json={"error": "internal error"})
+        )
+        response = await mock_client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "claude-opus",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "stream": True,
+            },
+        )
+
+        assert response.status_code == 500
+        assert response.headers["content-type"].startswith("text/event-stream")
+        assert response.headers["x-llm-router-returned-last-error"] == "true"
+        assert response.text.startswith("data: ")
+        assert '"error": "internal error"' in response.text
+
+
 # Fixtures for passthrough strategy
 
 @pytest.fixture

@@ -60,6 +60,11 @@ Fuer lange lokale LLM-Laeufe sollte `runtime.request_timeout_seconds: null` gese
 
 Wenn alle fuer den Request sofort verfuegbaren Backends einen HTTP-Fehler zurueckgeben oder die Policy kein weiteres Backend erlaubt, gibt der Router standardmaessig den letzten Backend-Fehler direkt zurueck. Der Client sieht dann z.B. den letzten 429- oder 500-Body statt eines generischen `all_backends_failed`. Dieses Verhalten kann pro Policy mit `return_last_error_on_exhausted_backends: false` deaktiviert werden.
 
+Bei `stream: true` wird ein letzter Backend-Fehler als SSE-kompatibler
+`data: {...}`-Chunk mit `text/event-stream` ausgeliefert. Der HTTP-Status des
+Backend-Fehlers bleibt erhalten; Clients koennen also Status und Stream-Payload
+auswerten.
+
 ```
 Anfrage -> Backend vm -> Connection Error
                      |

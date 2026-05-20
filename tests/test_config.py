@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 from pathlib import Path
+from fastapi.testclient import TestClient
 
+from llm_router.app import create_app
+from llm_router.backends import resolve_backend_model
 from llm_router.config import load_config
 
 
@@ -313,6 +316,153 @@ logging:
     path.write_text(config_content)
     with pytest.raises(ValueError, match="Invalid unknown_model_strategy"):
         load_config(path)
+
+
+def test_backend_specific_model_mapping_is_validated(tmp_path: Path):
+    config_content = """
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  request_timeout_seconds: 600
+
+backends:
+  vm:
+    type: openai_compatible
+    base_url: http://vm.example/v1
+    priority: 10
+  pi:
+    type: openai_compatible
+    base_url: http://pi.example/v1
+    priority: 20
+
+models:
+  chess-small:
+    provider_model: fallback-model
+    backend_models:
+      vm: qwen2.5:14b
+      pi: qwen2.5:7b
+    backends:
+      - vm
+      - pi
+    policy: standard
+
+policies:
+  standard:
+    max_attempts_per_backend: 1
+
+limit_detection:
+  status_codes: [429]
+  body_markers: []
+
+logging:
+  level: INFO
+"""
+    path = tmp_path / "router.yaml"
+    path.write_text(config_content)
+
+    config = load_config(path)
+    assert resolve_backend_model("chess-small", "vm", config) == "qwen2.5:14b"
+    assert resolve_backend_model("chess-small", "pi", config) == "qwen2.5:7b"
+
+
+def test_backend_specific_model_mapping_rejects_unknown_backend(tmp_path: Path):
+    config_content = """
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  request_timeout_seconds: 600
+
+backends:
+  vm:
+    type: openai_compatible
+    base_url: http://vm.example/v1
+    priority: 10
+
+models:
+  chess-small:
+    provider_model: fallback-model
+    backend_models:
+      missing: qwen2.5:7b
+    backends:
+      - vm
+    policy: standard
+
+policies:
+  standard:
+    max_attempts_per_backend: 1
+
+limit_detection:
+  status_codes: [429]
+  body_markers: []
+
+logging:
+  level: INFO
+"""
+    path = tmp_path / "bad_router.yaml"
+    path.write_text(config_content)
+
+    with pytest.raises(ValueError, match="unknown backend"):
+        load_config(path)
+
+
+def test_reload_config_on_request_refreshes_models(tmp_path: Path, monkeypatch):
+    path = tmp_path / "router.yaml"
+
+    def write_config(extra_model: bool) -> None:
+        extra = """
+  chess-large:
+    provider_model: large-model
+    backends:
+      - local
+    policy: standard
+""" if extra_model else ""
+        path.write_text(
+            f"""
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  reload_config_on_request: true
+
+backends:
+  local:
+    type: openai_compatible
+    base_url: http://local.example/v1
+    priority: 10
+
+models:
+  chess-small:
+    provider_model: small-model
+    backends:
+      - local
+    policy: standard
+{extra}
+policies:
+  standard:
+    max_attempts_per_backend: 1
+
+limit_detection:
+  status_codes: [429]
+  body_markers: []
+
+logging:
+  level: INFO
+"""
+        )
+
+    write_config(extra_model=False)
+    monkeypatch.setenv("LLM_ROUTER_CONFIG", str(path))
+    client = TestClient(create_app())
+    assert [m["id"] for m in client.get("/v1/models").json()["data"]] == ["chess-small"]
+
+    write_config(extra_model=True)
+    model_ids = [m["id"] for m in client.get("/v1/models").json()["data"]]
+    assert model_ids == ["chess-small", "chess-large"]
 
 
 def test_file_not_found():

@@ -56,3 +56,8 @@ kimi --model kimi-cli-default
 ## Streaming
 
 Kimi nutzt `stream: true`. Der Router leitet den SSE-Stream direkt weiter – Tokens erscheinen sofort, nicht erst am Ende.
+Wenn der letzte verfuegbare Backend-Versuch bei einem Streaming-Request mit
+einem HTTP-Fehler endet, gibt der Router den Fehler ebenfalls als
+`text/event-stream` mit einem `data: {...}`-Chunk zurueck. Dadurch sieht ein
+SSE-Client den Fehler im erwarteten Stream-Format; die
+`x-llm-router-returned-last-error`-Header bleiben zusaetzlich gesetzt.

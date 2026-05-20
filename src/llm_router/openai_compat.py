@@ -4,23 +4,25 @@ import json
 import time
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Query, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from llm_router.backends import backend_order, resolve_backend_model
 from llm_router.errors import RouterError, error_response
 from llm_router.fallback import looks_like_limit_error, should_fallback
 from llm_router.logging_jsonl import log_backend_state_change, log_request
-from llm_router.metrics import get_metrics
+from llm_router.metrics import get_metrics, snapshot_to_prometheus
 from llm_router.schemas import BackendConfig, PolicyConfig, RouterConfig
 
 router = APIRouter()
 
 # App state is injected by the app module at startup
 _CONFIG: RouterConfig | None = None
+_CONFIG_PATH: Path | None = None
 _HTTP_CLIENT: httpx.AsyncClient | None = None
 _LOGGER: Any = None
 _ROUND_ROBIN_OFFSETS: dict[str, int] = {}
@@ -38,14 +40,20 @@ def _get_logger() -> Any:
 
 
 def _get_config() -> RouterConfig:
+    global _CONFIG
     if _CONFIG is None:
-        raise RouterError(500, "configuration_error", "Config not loaded")
+        raise RouterError("Config not loaded", 500, "configuration_error")
+    if _CONFIG.runtime.reload_config_on_request and _CONFIG_PATH is not None:
+        from llm_router.config import load_config
+
+        _CONFIG = load_config(_CONFIG_PATH)
     return _CONFIG
 
 
-def set_config(config: RouterConfig) -> None:
-    global _CONFIG
+def set_config(config: RouterConfig, config_path: Path | str | None = None) -> None:
+    global _CONFIG, _CONFIG_PATH
     _CONFIG = config
+    _CONFIG_PATH = Path(config_path) if config_path is not None else None
     _ROUND_ROBIN_OFFSETS.clear()
     _BACKEND_STATE.clear()
 
@@ -118,6 +126,37 @@ def _backend_error_response(
             returned_last_error=True,
         ),
         media_type=media_type,
+    )
+
+
+def _stream_backend_error_response(
+    *,
+    status_code: int,
+    body: bytes,
+    backend_name: str,
+    model_alias: str,
+    provider_model: str,
+    fallback_used: bool,
+) -> StreamingResponse:
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        payload = error_response("Backend stream failed", "backend_error")
+
+    async def _error_stream() -> Any:
+        yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n".encode("utf-8")
+
+    return StreamingResponse(
+        _error_stream(),
+        status_code=status_code,
+        headers=_router_response_headers(
+            backend_name=backend_name,
+            model_alias=model_alias,
+            provider_model=provider_model,
+            fallback_used=fallback_used,
+            returned_last_error=True,
+        ),
+        media_type="text/event-stream",
     )
 
 
@@ -261,8 +300,18 @@ async def list_models() -> dict[str, Any]:
 
 
 @router.get("/metrics", response_model=None)
-async def metrics() -> dict[str, Any]:
-    return get_metrics().snapshot()
+async def metrics(
+    request: Request,
+    format: str | None = Query(default=None),
+) -> dict[str, Any] | Response:
+    snapshot = get_metrics().snapshot()
+    accept = request.headers.get("accept", "")
+    if format == "prometheus" or "text/plain" in accept:
+        return Response(
+            snapshot_to_prometheus(snapshot),
+            media_type="text/plain; version=0.0.4",
+        )
+    return snapshot
 
 
 @router.post("/v1/chat/completions", response_model=None)
@@ -445,6 +494,15 @@ async def chat_completions(
         if policy.return_last_error_on_exhausted_backends:
             content_type = proxy_resp.headers.get("content-type")
             await proxy_resp.aclose()
+            if stream:
+                return _stream_backend_error_response(
+                    status_code=proxy_resp.status_code,
+                    body=resp_body,
+                    backend_name=backend_name,
+                    model_alias=model_alias,
+                    provider_model=provider_model,
+                    fallback_used=fallback_used,
+                )
             return _backend_error_response(
                 status_code=proxy_resp.status_code,
                 body=resp_body,

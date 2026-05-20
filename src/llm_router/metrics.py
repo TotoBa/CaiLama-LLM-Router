@@ -83,3 +83,38 @@ def get_metrics() -> RequestMetrics:
     if _METRICS is None:
         return init_metrics()
     return _METRICS
+
+
+def snapshot_to_prometheus(snapshot: dict[str, Any]) -> str:
+    """Render a privacy-safe Prometheus text exposition from a metrics snapshot."""
+    requests = snapshot.get("requests", {})
+    lines = [
+        "# HELP llm_router_requests_total Total proxied chat completion requests.",
+        "# TYPE llm_router_requests_total counter",
+        f"llm_router_requests_total {requests.get('total', 0)}",
+        "# HELP llm_router_requests_success_total Successful proxied requests.",
+        "# TYPE llm_router_requests_success_total counter",
+        f"llm_router_requests_success_total {requests.get('success', 0)}",
+        "# HELP llm_router_requests_errors_total Failed proxied requests.",
+        "# TYPE llm_router_requests_errors_total counter",
+        f"llm_router_requests_errors_total {requests.get('errors', 0)}",
+        "# HELP llm_router_requests_fallbacks_total Requests that used fallback.",
+        "# TYPE llm_router_requests_fallbacks_total counter",
+        f"llm_router_requests_fallbacks_total {requests.get('fallbacks', 0)}",
+        "# HELP llm_router_request_average_latency_ms Average request latency.",
+        "# TYPE llm_router_request_average_latency_ms gauge",
+        f"llm_router_request_average_latency_ms {requests.get('average_latency_ms', 0)}",
+    ]
+
+    for alias, count in sorted(snapshot.get("aliases", {}).items()):
+        lines.append(f'llm_router_alias_requests_total{{alias="{alias}"}} {count}')
+    for backend, count in sorted(snapshot.get("backends", {}).items()):
+        lines.append(f'llm_router_backend_requests_total{{backend="{backend}"}} {count}')
+    for backend, count in sorted(snapshot.get("cooldowns", {}).items()):
+        lines.append(f'llm_router_backend_cooldowns_total{{backend="{backend}"}} {count}')
+    for backend, count in sorted(snapshot.get("backend_failures", {}).items()):
+        lines.append(f'llm_router_backend_failures_total{{backend="{backend}"}} {count}')
+    for backend, count in sorted(snapshot.get("limit_detections", {}).items()):
+        lines.append(f'llm_router_limit_detections_total{{backend="{backend}"}} {count}')
+
+    return "\n".join(lines) + "\n"

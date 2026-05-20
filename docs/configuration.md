@@ -30,12 +30,18 @@ nano configs/router.local.yaml
 runtime:
   request_timeout_seconds: null
   connect_timeout_seconds: 10
+  reload_config_on_request: false
   unknown_model_strategy: "error"
 ```
 
 - `request_timeout_seconds: null` oder `0` bedeutet: kein Timeout fuer einen laufenden Backend-Request. Das ist fuer lokale oder langsame LLMs sinnvoll, weil der Router nicht abbrechen soll, solange das Backend die Verbindung haelt.
 - `connect_timeout_seconds` begrenzt nur den Verbindungsaufbau. Damit werden tote Hosts weiter schnell erkannt und Fallback kann greifen.
 - Ein positiver Wert fuer `request_timeout_seconds` setzt wieder einen Read/Write/Pool-Timeout fuer Backend-Requests.
+- `reload_config_on_request: true` laedt die YAML-Datei vor jedem Request neu,
+  wenn der Router ueber `LLM_ROUTER_CONFIG` oder `llm-router serve --config`
+  aus einer Datei gestartet wurde. Das aktualisiert Routing, Aliase und
+  Policies ohne Prozessneustart; bestehende HTTP-Client-Timeouts werden erst
+  beim Neustart neu aufgebaut.
 - `unknown_model_strategy` definiert das Verhalten, wenn ein Client ein Modell anfragt, das in `models` nicht definiert ist. `error` (Standard) gibt 400 zurück. `passthrough` leitet den Request an das erste verfügbare Backend durch; der Modell-Name wird unverändert an das Backend weitergereicht. Das ist nützlich, wenn CaiLama dynamische Rollen oder neue Modell-Namen verwendet, die noch nicht hart im Router konfiguriert sind.
 
 ## Server
@@ -82,12 +88,23 @@ models:
     provider_model: "gemma4:31b-cloud"
     backends: ["local", "pi"]
     policy: "long_running"
+
+  chess-analysis:
+    provider_model: "fallback-model"
+    backend_models:
+      local: "qwen2.5:14b"
+      pi: "qwen2.5:7b"
+    backends: ["local", "pi"]
+    policy: "standard"
 ```
 
 - **Logisches Modell** (`chess-small`) ist das, was der Client anfragt
 - **Provider-Modell** (`deepseek-v4-flash:cloud`) ist das, was das Backend versteht
 - **Backends**: Reihenfolge ist Fallback-Reihenfolge. Fehlt sie, werden alle `enabled` Backends nach `priority` sortiert.
 - Provider-Modelle muessen auf jedem Backend verfuegbar sein, das in `backends` genannt ist
+- `backend_models` ueberschreibt den Provider-Modellnamen je Backend. Das ist
+  fuer heterogene Hosts sinnvoll, wenn derselbe Alias auf der VM und auf einem
+  kleineren Host unterschiedliche Modellnamen nutzen soll.
 - Soll ein Modell nur ueber einen Host verfuegbar sein, wird nur dieser Backend-Name gesetzt, z.B. `backends: ["vm"]`.
 - Fachliche Rollen wie `chess-coach` oder `chess-vision` sind normale Alias-Namen. Der Router injiziert keine Rollenprompts; Verhalten steuert der aufrufende Client.
 
@@ -163,6 +180,20 @@ logging:
 ```
 
 Hinweis: Standardmäßig werden keine Prompts oder Antworten geloggt. Für Debugging lokal freischaltbar.
+
+## Metrics
+
+`GET /metrics` liefert standardmaessig privacy-safe JSON. Fuer Prometheus kann
+das Textformat explizit angefordert werden:
+
+```bash
+curl -H 'Accept: text/plain' http://127.0.0.1:18080/metrics
+curl http://127.0.0.1:18080/metrics?format=prometheus
+```
+
+Die Metriken enthalten Zaehler fuer Requests, Fehler, Fallbacks, Aliase,
+Backends, Cooldowns und Limit-Erkennung, aber keine Prompt-, Response- oder
+Header-Inhalte.
 
 ## Env-Variablen
 
