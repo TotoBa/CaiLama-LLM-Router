@@ -8,7 +8,7 @@ Webseite: <https://cailama.org/>
 
 Ecosystem-Doku:
 
-- Human-Referenz: <https://cailama.org/reference.html>
+- Human-Referenz: <https://cailama.org/reference.php>
 - LLM-Einstieg: <https://cailama.org/llms.txt>
 - LLM-Markdown: <https://cailama.org/ecosystem-reference.md>
 - Maschinenlesbar: <https://cailama.org/data/ecosystem.json>
