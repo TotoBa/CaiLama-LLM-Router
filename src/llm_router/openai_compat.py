@@ -14,6 +14,7 @@ from llm_router.backends import backend_order, resolve_backend_model
 from llm_router.errors import RouterError, error_response
 from llm_router.fallback import looks_like_limit_error, should_fallback
 from llm_router.logging_jsonl import log_backend_state_change, log_request
+from llm_router.metrics import get_metrics
 from llm_router.schemas import BackendConfig, PolicyConfig, RouterConfig
 
 router = APIRouter()
@@ -259,6 +260,11 @@ async def list_models() -> dict[str, Any]:
     return {"object": "list", "data": data}
 
 
+@router.get("/metrics", response_model=None)
+async def metrics() -> dict[str, Any]:
+    return get_metrics().snapshot()
+
+
 @router.post("/v1/chat/completions", response_model=None)
 async def chat_completions(
     request: Request,
@@ -308,6 +314,8 @@ async def chat_completions(
                 break
             except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException) as exc:
                 _record_backend_failure(model_alias, backend_name, policy)
+                metrics = get_metrics()  # type: ignore
+                metrics.record_backend_failure(backend_name)
                 is_last_backend = backend_index == len(backends) - 1
                 duration_ms = (time.monotonic() - request_started) * 1000
                 logger = _get_logger()
@@ -343,6 +351,15 @@ async def chat_completions(
             _record_backend_success(model_alias, backend_name)
             # success
             status_code = proxy_resp.status_code
+            duration_ms = (time.monotonic() - request_started) * 1000
+            get_metrics().record_request(
+                alias=model_alias,
+                backend=backend_name,
+                latency_ms=duration_ms,
+                success=True,
+                fallback_used=fallback_used,
+                limit_detected=False,
+            )
             response_headers = _router_response_headers(
                 backend_name=backend_name,
                 model_alias=model_alias,
@@ -395,6 +412,8 @@ async def chat_completions(
         fallbackable = should_fallback(proxy_resp.status_code, resp_body, False, policy, config)
         if fallbackable:
             _record_backend_failure(model_alias, backend_name, policy)
+            get_metrics().record_cooldown(backend_name)
+            get_metrics().record_backend_failure(backend_name)
         logger = _get_logger()
         if logger:
             log_request(
@@ -410,6 +429,14 @@ async def chat_completions(
                 fallback_used=False,
                 duration_ms=(time.monotonic() - request_started) * 1000,
             )
+        get_metrics().record_request(
+            alias=model_alias,
+            backend=backend_name,
+            latency_ms=(time.monotonic() - request_started) * 1000,
+            success=False,
+            fallback_used=fallback_used,
+            limit_detected=limit_detected,
+        )
         if not is_last and fallbackable:
             fallback_used = True
             continue

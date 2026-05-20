@@ -12,44 +12,71 @@ LLM-Router. Sie ersetzt keine Master-Planung und enthaelt keine Secrets.
 
 ## Betriebs- und Fallback-Haertung
 
-- [ ] Backend-Zustandsmodell pruefen: Round-Robin, Cooldown,
+- [x] Backend-Zustandsmodell pruefen: Round-Robin, Cooldown,
   Fehlerzaehlung und Recovery muessen fuer lokale und entfernte Backends
   nachvollziehbar bleiben.
-- [ ] Fallback-Verhalten dokumentieren und testen: Rate-Limits,
+    - Abgedeckt: Round-Robin-Verteilung, Cooldown-Skip, Cooldown-Recovery,
+      Retry auf Connection-Error, 5xx-Fallback, exhausted backends.
+- [x] Fallback-Verhalten dokumentieren und testen: Rate-Limits,
   Connection-Errors, 5xx-Antworten und ausgeschoepfte Backends muessen
   vorhersagbare Client-Antworten liefern.
-- [ ] Exhausted-Backend-Verhalten pruefen: Policies muessen klar festlegen, ob
+    - Doku: `docs/fallback.md`. Tests: `tests/test_fallback_detection.py`,
+      `tests/test_openai_chat_proxy.py`.
+- [x] Exhausted-Backend-Verhalten pruefen: Policies muessen klar festlegen, ob
   der letzte Backend-Fehler unveraendert an Clients zurueckgegeben wird oder
   ein Router-Fehler entsteht.
-- [ ] Health- und Smoke-Checks fuer CaiLama-Verbraucher stabil halten:
+    - `return_last_error_on_exhausted_backends` ist konfigurierbar und getestet.
+- [x] Health- und Smoke-Checks fuer CaiLama-Verbraucher stabil halten:
   `/health`, `/v1/models` und `/v1/chat/completions` duerfen keine lokalen
   Provider-Secrets voraussetzen.
+    - `/health` und `/v1/models` sind stateless. `smoke-test` nutzt die
+      Router-URL ohne Backend-Secrets pro Request.
 - [ ] JSONL-Logging regelmaessig gegen Datenschutzregeln pruefen:
   Prompt-Inhalte, Responses und Header bleiben standardmaessig aus Logs.
+    - Kein Code-Change nötig; es fehlt ein automatisierter Test, der die
+      JSONL-Output-Struktur auf sensitive Felder prueft.
 - [ ] Router-Observability definieren: privacy-safe KPIs fuer Backend-Ausfaelle,
   Fallbacks, Cooldowns, Modellalias-Nutzung und Latenzen sammeln, ohne
   Prompt-/Response-Inhalte zu loggen.
+    - `log_backend_state_change` fuer Cooldown-Events ist implementiert.
+    - Offen: aggregierte In-Memory-Metriken Endpoint (`/metrics`) oder
+      Prometheus-kompatible Metriken.
 
 ## CaiLama-Integration
 
-- [ ] Rollen-Aliase gegen CaiLama-Erwartungen abgleichen:
+- [x] Rollen-Aliase gegen CaiLama-Erwartungen abgleichen:
   `chess-router`, `chess-small`, `chess-large`, `chess-task`, `chess-coach`,
   `chess-analyst`, `chess-critic`, `chess-vision`, `chess-scribe`,
   `chess-researcher`.
+    - Aliase in Beispiel-Configs und `test_chess_alias_examples` geprueft.
 - [ ] Dokumentieren, welche Alias-Policies fuer Training, Analyse,
   Recherche und Kimi-CLI empfohlen sind.
-- [ ] `researcher`- und `analyst`-Rollen fuer RAG-gestuetzte Analysepakete
+    - Kurze Empfehlung in `docs/chess-system.md` ergaenzen:
+      `standard` fuer schnelle Tasks, `long_running` fuer Analyse/Coach,
+      `interactive` fuer Kimi-CLI.
+- [x] `researcher`- und `analyst`-Rollen fuer RAG-gestuetzte Analysepakete
   stabil halten; Retrieval-Kontext bleibt Aufgabe von CaiLama/CaiLama-Search,
   nicht des Routers.
-- [ ] Smoke-Test-Befehl fuer das CaiLama-Setup ohne echte Provider-Secrets
+    - Router delegiert nur Modell-Aliase; RAG-Logik ist nicht im Router.
+- [x] Smoke-Test-Befehl fuer das CaiLama-Setup ohne echte Provider-Secrets
   dokumentieren.
+    - `scripts/smoke-test.sh` und `scripts/check-config.sh` vorhanden;
+      `check-config` prueft Env-Vars offline.
 
 ## Qualitaetssicherung
 
 - [ ] `pytest`, `ruff` und `mypy` fuer betroffene Aenderungen ausfuehren.
-- [ ] Config-Beispiele pruefen, ohne echte lokale Configs zu committen.
-- [ ] Keine `.env`, Keys, Tokens oder lokalen Host-spezifischen Secrets
+    - Automatisiert: `pytest -q` und `ruff check .` gruen.
+    - Offen: `mypy src` hat 6 praexistente Fehler (RootModel, YAML-Stubs,
+      RouterError-Args); nicht aufgeschoben, aber nicht durch aktuelle
+      Aenderungen verursacht.
+- [x] Config-Beispiele pruefen, ohne echte lokale Configs zu committen.
+    - `tests/test_config.py::test_chess_alias_examples_include_dedicated_roles`
+      prueft `configs/router.chess-system.example.yaml` und
+      `configs/router.vm-pi.example.yaml`.
+- [x] Keine `.env`, Keys, Tokens oder lokalen Host-spezifischen Secrets
   versionieren.
+    - `.gitignore` enthaelt `.env`, `configs/*.local.yaml`, Logs.
 
 ## Kimi-Handoff: aktuelle Prioritaeten
 
@@ -90,6 +117,12 @@ Arbeite diese Reihenfolge ab und halte den Router strikt als Infrastruktur:
     - Tests: `tests/test_cli.py` – 4 Tests fuer `_check_env_vars`.
     - Dokumentation: `docs/configuration.md` erweitert.
 
+## Naester Arbeitsschritt
+
+- [ ] `/metrics` Endpunkt fuer privacy-safe In-Memory-Observability:
+  Backend-Ausfaelle, Fallbacks, Cooldowns, Alias-Nutzung, Latenzen.
+  Keine Prompt-/Response-Inhalte. JSON-Output fuer einfache Integration.
+
 ## Einheitlicher Kimi-Prompt
 
 ```text
@@ -125,14 +158,14 @@ Nach jeder erledigten Aufgabe:
 
 ## Kimi-Arbeitsregeln
 
-- [ ] Vor Arbeitsbeginn `AGENTS.md`, `README.md`, diese `TODO.md`,
+- [x] Vor Arbeitsbeginn `AGENTS.md`, `README.md`, diese `TODO.md`,
   `docs/architecture.md`, `docs/backends.md`, `docs/configuration.md`,
   `docs/fallback.md`, `docs/security.md` und `plan.md` lesen.
-- [ ] Keine separaten Prompt- oder Handoff-Dateien anlegen. Operative
+- [x] Keine separaten Prompt- oder Handoff-Dateien anlegen. Operative
   Folgearbeit gehoert in diese `TODO.md`; groessere Konzepte duerfen nur als
   klar benannte `*.plan.md` abgelegt werden.
-- [ ] Keine Schachproduktlogik in den Router verschieben.
-- [ ] Live-Zugriffe auf Backends nur auf ausdruecklichen Auftrag.
-- [ ] Abschlusspruefung ausfuehren: `pytest -q`, `ruff check .`,
+- [x] Keine Schachproduktlogik in den Router verschieben.
+- [x] Live-Zugriffe auf Backends nur auf ausdruecklichen Auftrag.
+- [x] Abschlusspruefung ausfuehren: `pytest -q`, `ruff check .`,
   `mypy src`, `git status --short`, `git diff --check`. Nicht verfuegbare
   Tools im Abschluss klar nennen.

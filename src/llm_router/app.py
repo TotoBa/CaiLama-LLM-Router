@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from llm_router.config import load_config
 from llm_router.errors import RouterError, error_response
 from llm_router.logging_jsonl import init_logger
+from llm_router.metrics import init_metrics
 from llm_router.openai_compat import router as openai_router, set_config, set_http_client, set_logger
 from llm_router.schemas import RouterConfig
 
@@ -37,6 +38,7 @@ def create_app(config: RouterConfig | None = None) -> FastAPI:
     set_config(config)
     set_http_client(httpx_client)
     set_logger(logger)
+    init_metrics()
 
     app = FastAPI(title="LLM Router", version="0.1.0")
     app.include_router(openai_router)
