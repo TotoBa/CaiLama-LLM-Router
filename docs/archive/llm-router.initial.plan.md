@@ -356,7 +356,7 @@ backends:
     base_url: "http://127.0.0.1:11434/v1"
 
   pi:
-    base_url: "http://192.168.178.50:11434/v1"
+    base_url: "http://pi-ollama.example.local:11434/v1"
 ```
 
 `configs/router.local.yaml` wird nicht eingecheckt.

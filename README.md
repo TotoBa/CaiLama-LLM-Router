@@ -57,7 +57,7 @@ cp configs/router.example.yaml configs/router.local.yaml
 cp .env.example .env
 ```
 
-Bearbeite `configs/router.local.yaml` und passe `backends` an deine IPs an.
+Bearbeite `configs/router.local.yaml` und passe `backends` an deine Hosts an.
 
 ### 2. Router starten
 
@@ -167,7 +167,7 @@ backends:
 
   pi:
     type: "openai_compatible"
-    base_url: "http://192.168.178.50:11434/v1"
+    base_url: "http://pi-ollama.example.local:11434/v1"
     api_key_env: "OLLAMA_PI_API_KEY"
     priority: 20
     enabled: true

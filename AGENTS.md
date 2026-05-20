@@ -21,6 +21,9 @@ Der Router ist Infrastruktur. Er enthaelt keine Schachproduktlogik.
   ausser der Nutzer verlangt das ausdruecklich.
 - Keine Schachrollenlogik im Router einbauen. CaiLama formuliert Rollen und
   Systemprompts; der Router routet Modelle.
+- Erledigte TODO-Punkte duerfen nur geloescht werden, wenn der Nutzer das
+  ausdruecklich verlangt. TODO ist nicht gleich Handoff; Handoff-Bloecke
+  bleiben als naechste operative Orientierung erhalten.
 
 ## Runtime- und Live-Betrieb
 
