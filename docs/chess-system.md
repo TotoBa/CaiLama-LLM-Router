@@ -47,6 +47,25 @@ LLM_MODEL_RESEARCHER=chess-researcher
 
 Diese Zuordnung lebt **nur im Router** – das Schachsystem fragt einfach `chess-small` und bekommt eine Antwort.
 
+## Empfohlene Policies
+
+| Alias | Empfohlene Policy | Begründung |
+|---|---|---|
+| `chess-router` | `standard` | Schnelle Klassifikation, max. 300s |
+| `chess-small` | `standard` | Schnelle Zugbewertung, max. 300s |
+| `chess-large` | `long_running` | Lange Analyse, max. 900s |
+| `chess-task` | `standard` | PGN-Kommentare, max. 300s |
+| `chess-coach` | `long_running` | Didaktische Ausführung, max. 900s |
+| `chess-analyst` | `long_running` | Umfangreiche Analyse, max. 900s |
+| `chess-critic` | `standard` | Prüfung auf Konsistenz, max. 300s |
+| `chess-vision` | `long_running` | OCR-/Diagramm-Analyse, max. 900s |
+| `chess-scribe` | `standard` | Berichtserstellung, max. 300s |
+| `chess-researcher` | `standard` | Recherche-Verdichtung, max. 300s |
+
+**Kimi-CLI** verwendet `kimi-cli-default` mit `policy: interactive`
+(max. 300s, `fallback_on_5xx: true`), da es als interaktiver Client
+schnell antworten und bei Fehlern schnell wechseln muss.
+
 ## Router-Konfiguration für Chess
 
 ```yaml

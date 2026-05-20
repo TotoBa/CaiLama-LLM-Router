@@ -49,8 +49,11 @@ LLM-Router. Sie ersetzt keine Master-Planung und enthaelt keine Secrets.
   `chess-analyst`, `chess-critic`, `chess-vision`, `chess-scribe`,
   `chess-researcher`.
     - Aliase in Beispiel-Configs und `test_chess_alias_examples` geprueft.
-- [ ] Dokumentieren, welche Alias-Policies fuer Training, Analyse,
+- [x] Dokumentieren, welche Alias-Policies fuer Training, Analyse,
   Recherche und Kimi-CLI empfohlen sind.
+    - `docs/chess-system.md`: Empfohlene Policy-Tabelle fuer alle 10 Schach-Aliase.
+    - `docs/kimi-cli.md`: Empfehlung fuer `interactive` oder `standard` mit
+      `fallback_on_5xx: true`, Begruendung als interaktiver Client.
     - Kurze Empfehlung in `docs/chess-system.md` ergaenzen:
       `standard` fuer schnelle Tasks, `long_running` fuer Analyse/Coach,
       `interactive` fuer Kimi-CLI.

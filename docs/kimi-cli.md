@@ -32,10 +32,16 @@ models:
   kimi-cli-default:
     provider_model: "kimi-k2.6:cloud"
     backends: ["vm", "pi"]
-    policy: "standard"
+    policy: "interactive"
 ```
 
 Wichtig: Der Modellname in `config.toml` (`kimi-cli-default`) muss ein bekannter Alias im Router sein.
+
+### Empfohlene Policy
+
+Fuer die Kimi-CLI empfehlen wir `policy: interactive` (falls in der Config definiert)
+oder `policy: standard` mit `fallback_on_5xx: true`. Kimi ist ein interaktiver Client;
+Fallbacks sollen schnell greifen, damit die Nutzererfahrung stabil bleibt.
 
 ## Test
 
