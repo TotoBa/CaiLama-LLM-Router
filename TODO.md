@@ -55,9 +55,15 @@ LLM-Router. Sie ersetzt keine Master-Planung und enthaelt keine Secrets.
 
 Arbeite diese Reihenfolge ab und halte den Router strikt als Infrastruktur:
 
-1. Fallback-Verhalten absichern: Round-Robin, Cooldown, Fehlerzaehlung,
+1. [x] Fallback-Verhalten absichern: Round-Robin, Cooldown, Fehlerzaehlung,
    Recovery, Rate-Limits, Connection-Errors, 5xx und exhausted backends mit
    Tests und klaren Client-Antworten pruefen.
+    - Round-Robin: vorhanden (`test_chat_completions_round_robin_distribution`).
+    - Cooldown: vorhanden (`test_chat_completions_skips_backend_during_cooldown`).
+    - Recovery nach Cooldown: neu (`test_chat_completions_recovered_backend_available_again`).
+    - Retry auf Connection-Error: neu (`test_chat_completions_retries_connection_error`).
+    - 5xx-Fallback: neu (`test_chat_completions_fallback_on_5xx`).
+    - Exhausted backends: vorhanden (`test_chat_completions_returns_last_backend_error_when_exhausted`).
 2. Rollen- und Modell-Aliase gegen CaiLama-Erwartungen abgleichen:
    `chess-router`, `chess-small`, `chess-large`, `chess-task`,
    `chess-coach`, `chess-analyst`, `chess-critic`, `chess-vision`,

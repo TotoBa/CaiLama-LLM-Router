@@ -68,6 +68,18 @@ models:
       - anthropic
     policy: cooldown
     routing_strategy: round_robin
+  retry-connection-model:
+    provider_model: retry-llm
+    backends:
+      - openai
+      - anthropic
+    policy: retry
+  recovery-model:
+    provider_model: recovery-llm
+    backends:
+      - openai
+      - anthropic
+    policy: cooldown
 
 policies:
   standard:
@@ -104,6 +116,24 @@ policies:
     fallback_on_4xx: false
     fallback_on_model_not_found: false
     timeout_seconds: 300
+  retry:
+    max_attempts_per_backend: 2
+    max_backend_failures_before_cooldown: 2
+    backend_cooldown_seconds: 300
+    retry_on_connection_error: true
+    retry_on_timeout: false
+    fallback_on_limit: true
+    fallback_on_5xx: false
+    fallback_on_4xx: false
+    fallback_on_model_not_found: false
+    timeout_seconds: 300
+
+  recovery-model:
+    provider_model: recovery-llm
+    backends:
+      - openai
+      - anthropic
+    policy: cooldown
 
 limit_detection:
   status_codes:
@@ -327,6 +357,108 @@ async def test_chat_completions_model_mapping(mock_client):
         assert response.headers["x-llm-router-request-model"] == "claude-opus"
         assert response.headers["x-llm-router-provider-model"] == "claude-3-opus-20240229"
         assert route.called
+
+
+async def test_chat_completions_retries_connection_error(mock_client):
+    with respx.mock:
+        openai_route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            side_effect=[
+                httpx.ConnectError("connection refused"),
+                Response(200, json={
+                    "id": "chatcmpl-test-openai",
+                    "object": "chat.completion",
+                    "model": "retry-llm",
+                    "choices": [{"message": {"role": "assistant", "content": "openai"}}]
+                }),
+            ]
+        )
+        response = await mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "retry-connection-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert response.status_code == 200
+        assert response.json()["choices"][0]["message"]["content"] == "openai"
+        assert openai_route.call_count == 2
+        assert response.headers["x-llm-router-backend"] == "openai"
+        assert response.headers["x-llm-router-fallback-used"] == "false"
+
+
+async def test_chat_completions_fallback_on_5xx(mock_client):
+    with respx.mock:
+        openai_route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(502, json={"error": "bad gateway"})
+        )
+        anthropic_route = respx.post("https://api.anthropic.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test-anthropic",
+                "object": "chat.completion",
+                "model": "fallback-llm",
+                "choices": [{"message": {"role": "assistant", "content": "anthropic"}}]
+            })
+        )
+        response = await mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "legacy-error-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert response.status_code == 200
+        assert response.json()["choices"][0]["message"]["content"] == "anthropic"
+        assert openai_route.called
+        assert anthropic_route.called
+        assert response.headers["x-llm-router-fallback-used"] == "true"
+
+
+async def test_chat_completions_recovered_backend_available_again(mock_client):
+    """A backend in cooldown becomes available again after cooldown expires."""
+    import time
+    with respx.mock:
+        _openai_calls = 0
+
+        def _openai_resp(request):
+            nonlocal _openai_calls
+            _openai_calls += 1
+            if _openai_calls == 1:
+                return Response(500, json={"error": "internal error"})
+            return Response(200, json={
+                "id": "chatcmpl-recovered",
+                "object": "chat.completion",
+                "model": "recovery-llm",
+                "choices": [{"message": {"role": "assistant", "content": "openai-recovered"}}]
+            })
+
+        openai_route = respx.post("https://api.openai.com/v1/chat/completions").mock(side_effect=_openai_resp)
+        anthropic_route = respx.post("https://api.anthropic.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test",
+                "object": "chat.completion",
+                "model": "recovery-llm",
+                "choices": [{"message": {"role": "assistant", "content": "anthropic"}}]
+            })
+        )
+
+        # First request: openai fails -> cooldown -> fallback to anthropic
+        first = await mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "recovery-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert first.status_code == 200
+        assert first.headers["x-llm-router-backend"] == "anthropic"
+
+        # Travel forward in time past cooldown
+        from llm_router import openai_compat as oa
+        now = time.monotonic()
+        for key, state in oa._BACKEND_STATE.items():
+            state.cooldown_until = now - 1.0
+
+        second = await mock_client.post(
+            "/v1/chat/completions",
+            json={"model": "recovery-model", "messages": [{"role": "user", "content": "Hi"}]},
+        )
+        assert second.status_code == 200
+        # After recovery openai should be tried first again and succeed
+        assert second.headers["x-llm-router-backend"] == "openai"
+        assert second.json()["choices"][0]["message"]["content"] == "openai-recovered"
+        assert openai_route.call_count == 2
+        assert anthropic_route.call_count == 1
 
 
 async def test_chat_completions_all_backends_fail(mock_client):
