@@ -21,6 +21,12 @@ Vor Arbeitsbeginn lesen:
 
 ## Naechster Arbeitsschritt
 
+Aktueller Stand 2026-05-21: Fuer den Router ist nach dem aktuellen Nutzerstand
+keine neue Folgearbeit aktiv. Agenten sollen in diesem Repository keine neuen
+Router-Aufgaben beginnen, solange der Nutzer nicht ausdruecklich wieder Router-
+Arbeit beauftragt. Offene Ecosystem-Energie liegt vorerst bei
+`TotoBa/CaiLama-Search`.
+
 - [x] Observability fuer Cooldowns schaerfen: `cooldowns` in `/metrics` zaehlt
   nur noch tatsaechlich gestartete Backend-Cooldown-Transitionen. Einzelne
   Backend-Fehler bleiben separat unter `backend_failures` sichtbar.
