@@ -259,4 +259,4 @@ Ein Modell kann gezielt nur auf einem Backend angeboten werden, z.B. `backends: 
 
 ## Lizenz
 
-MIT
+AGPL-3.0-or-later

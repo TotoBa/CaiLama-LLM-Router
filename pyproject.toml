@@ -7,6 +7,7 @@ name = "llm-router"
 version = "0.1.0"
 description = "Generic local LLM routing gateway with OpenAI-compatible API, backend fallback, model aliases and JSONL logging."
 requires-python = ">=3.11"
+license = {text = "AGPL-3.0-or-later"}
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
