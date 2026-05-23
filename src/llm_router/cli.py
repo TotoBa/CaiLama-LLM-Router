@@ -156,6 +156,9 @@ def _format_usage(data: dict[str, Any]) -> str:
         "Usage tokens",
         f"  prompt:           {usage.get('prompt_tokens', 0)}",
         f"  completion:       {usage.get('completion_tokens', 0)}",
+        f"  output:           {usage.get('output_tokens', usage.get('completion_tokens', 0))}",
+        f"  reasoning:        {usage.get('reasoning_tokens', 0)}",
+        f"  thinking:         {usage.get('thinking_tokens', usage.get('reasoning_tokens', 0))}",
         f"  total:            {usage.get('total_tokens', 0)}",
     ]
 
@@ -239,6 +242,9 @@ def _build_benchmark(data: dict[str, Any]) -> dict[str, Any]:
         "usage": {
             "prompt_tokens": usage.get("prompt_tokens", 0),
             "completion_tokens": usage.get("completion_tokens", 0),
+            "output_tokens": usage.get("output_tokens", usage.get("completion_tokens", 0)),
+            "reasoning_tokens": usage.get("reasoning_tokens", 0),
+            "thinking_tokens": usage.get("thinking_tokens", usage.get("reasoning_tokens", 0)),
             "total_tokens": usage.get("total_tokens", 0),
         },
         "error_rate": round(requests.get("errors", 0) / total, 4),

@@ -19,6 +19,7 @@ class RequestMetrics:
     total_latency_ms: float = 0.0
     total_prompt_tokens: int = 0
     total_completion_tokens: int = 0
+    total_reasoning_tokens: int = 0
     total_tokens: int = 0
     alias_counts: dict[str, int] = field(default_factory=dict)
     backend_counts: dict[str, int] = field(default_factory=dict)
@@ -37,6 +38,7 @@ class RequestMetrics:
         limit_detected: bool,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
+        reasoning_tokens: int = 0,
         total_tokens: int = 0,
     ) -> None:
         self.total_requests += 1
@@ -47,6 +49,7 @@ class RequestMetrics:
             self.total_success += 1
             self.total_prompt_tokens += prompt_tokens
             self.total_completion_tokens += completion_tokens
+            self.total_reasoning_tokens += reasoning_tokens
             self.total_tokens += total_tokens
         else:
             self.total_errors += 1
@@ -74,6 +77,9 @@ class RequestMetrics:
             "usage": {
                 "prompt_tokens": self.total_prompt_tokens,
                 "completion_tokens": self.total_completion_tokens,
+                "output_tokens": self.total_completion_tokens,
+                "reasoning_tokens": self.total_reasoning_tokens,
+                "thinking_tokens": self.total_reasoning_tokens,
                 "total_tokens": self.total_tokens,
             },
             "aliases": self.alias_counts,
@@ -125,6 +131,15 @@ def snapshot_to_prometheus(snapshot: dict[str, Any]) -> str:
         "# HELP llm_router_usage_completion_tokens_total Aggregated completion tokens from successful requests.",
         "# TYPE llm_router_usage_completion_tokens_total counter",
         f"llm_router_usage_completion_tokens_total {usage.get('completion_tokens', 0)}",
+        "# HELP llm_router_usage_output_tokens_total Aggregated output tokens from successful requests.",
+        "# TYPE llm_router_usage_output_tokens_total counter",
+        f"llm_router_usage_output_tokens_total {usage.get('output_tokens', usage.get('completion_tokens', 0))}",
+        "# HELP llm_router_usage_reasoning_tokens_total Aggregated reasoning/thinking tokens from successful requests.",
+        "# TYPE llm_router_usage_reasoning_tokens_total counter",
+        f"llm_router_usage_reasoning_tokens_total {usage.get('reasoning_tokens', 0)}",
+        "# HELP llm_router_usage_thinking_tokens_total Aggregated reasoning/thinking tokens from successful requests.",
+        "# TYPE llm_router_usage_thinking_tokens_total counter",
+        f"llm_router_usage_thinking_tokens_total {usage.get('thinking_tokens', usage.get('reasoning_tokens', 0))}",
         "# HELP llm_router_usage_total_tokens_total Aggregated total tokens from successful requests.",
         "# TYPE llm_router_usage_total_tokens_total counter",
         f"llm_router_usage_total_tokens_total {usage.get('total_tokens', 0)}",

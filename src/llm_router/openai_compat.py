@@ -275,15 +275,37 @@ async def _send_backend_request(
     return await _HTTP_CLIENT.send(request, stream=stream)
 
 
-def _extract_usage(body: dict[str, Any]) -> tuple[int, int, int]:
+def _int_usage_value(value: Any) -> int:
+    if isinstance(value, bool):
+        return 0
+    if isinstance(value, int):
+        return max(value, 0)
+    if isinstance(value, float):
+        return max(int(value), 0)
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return 0
+
+
+def _extract_usage(body: dict[str, Any]) -> tuple[int, int, int, int]:
     """Extract token counts from an OpenAI-compatible response body."""
     usage = body.get("usage") if isinstance(body, dict) else None
     if not isinstance(usage, dict):
-        return 0, 0, 0
-    prompt_tokens = usage.get("prompt_tokens") or 0
-    completion_tokens = usage.get("completion_tokens") or 0
-    total_tokens = usage.get("total_tokens") or 0
-    return int(prompt_tokens), int(completion_tokens), int(total_tokens)
+        return 0, 0, 0, 0
+    prompt_tokens = _int_usage_value(usage.get("prompt_tokens"))
+    completion_tokens = _int_usage_value(usage.get("completion_tokens") or usage.get("output_tokens"))
+    total_tokens = _int_usage_value(usage.get("total_tokens"))
+    reasoning_tokens = _int_usage_value(usage.get("reasoning_tokens") or usage.get("thinking_tokens"))
+
+    completion_details = usage.get("completion_tokens_details")
+    if isinstance(completion_details, dict):
+        reasoning_tokens = max(reasoning_tokens, _int_usage_value(completion_details.get("reasoning_tokens")))
+
+    output_details = usage.get("output_tokens_details")
+    if isinstance(output_details, dict):
+        reasoning_tokens = max(reasoning_tokens, _int_usage_value(output_details.get("reasoning_tokens")))
+
+    return prompt_tokens, completion_tokens, reasoning_tokens, total_tokens
 
 
 @router.get("/health", response_model=None)
@@ -466,7 +488,7 @@ async def chat_completions(
 
             out_body = await proxy_resp.aread()
             parsed_body = json.loads(out_body) if out_body else {}
-            prompt_tokens, completion_tokens, total_tokens = _extract_usage(parsed_body)
+            prompt_tokens, completion_tokens, reasoning_tokens, total_tokens = _extract_usage(parsed_body)
             get_metrics().record_request(
                 alias=model_alias,
                 backend=backend_name,
@@ -476,6 +498,7 @@ async def chat_completions(
                 limit_detected=False,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
+                reasoning_tokens=reasoning_tokens,
                 total_tokens=total_tokens,
             )
 

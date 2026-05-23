@@ -34,6 +34,12 @@ aufgenommen:
 - [x] Privacy-safe Token-/Usage-Metriken ergaenzen: OpenAI-kompatibles `usage`
   aus Antworten aggregieren, `/metrics` JSON und Prometheus-Text erweitern.
   Keine Prompt- oder Response-Inhalte speichern.
+  Update 2026-05-23: Reasoning-/Thinking-Tokens werden zusaetzlich aus
+  `usage.reasoning_tokens`, `usage.thinking_tokens`,
+  `completion_tokens_details.reasoning_tokens` oder
+  `output_tokens_details.reasoning_tokens` aggregiert. `output_tokens` und
+  `thinking_tokens` stehen als benchmarkfreundliche Aliasfelder in Metrics,
+  CLI-Usage und Benchmark-Export.
 - [x] Optionalen `llm-router usage` Diagnosebefehl ergaenzen:
   `llm-router usage --metrics-url URL` zeigt Requests, Fallbacks, Latenz,
   Alias-/Backend-Verteilung und Token-Gesamtwerte lesbar an.
@@ -89,9 +95,12 @@ aufgenommen:
 Stand 2026-05-23: Alle Punkte unter "Naechster Arbeitsschritt" sind umgesetzt.
 Zusatzstand: Chess-Aliase sind fuer die naechste Testphase auf Gemma/Kimi
 umgestellt, `deepseek-v4-pro:cloud` ist aus Beispielconfigs und Tests entfernt,
-und das Docker-Beispiel baut wieder aus dem Repo-Root-Kontext. Keine direkte
-Router-Folgearbeit beginnen, bis ein Live-Smoke, ein neuer Benchmark-Bedarf
-oder ein neues Backend-/Alias-Profil beauftragt wird. Keine echten Backends
+das Docker-Beispiel baut wieder aus dem Repo-Root-Kontext, und die
+Benchmark-/Usage-Metriken liefern jetzt auch `output_tokens`,
+`reasoning_tokens` und `thinking_tokens`, sofern Backends diese Usage-Daten
+bereitstellen. Keine direkte Router-Folgearbeit beginnen, bis ein Live-Smoke,
+ein neuer Benchmark-Bedarf oder ein neues Backend-/Alias-Profil beauftragt
+wird. Keine echten Backends
 oder Live-Runtime-Services ohne ausdruecklichen Nutzerauftrag verwenden.
 
 Arbeite die Punkte unter "Naechster Arbeitsschritt" von oben nach unten ab.

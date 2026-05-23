@@ -83,12 +83,14 @@ def test_check_env_vars_server_require_api_key(monkeypatch):
 def test_format_usage_basic():
     text = _format_usage({
         "requests": {"total": 3, "success": 3, "errors": 0, "fallbacks": 0, "average_latency_ms": 42},
-        "usage": {"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30},
+        "usage": {"prompt_tokens": 10, "completion_tokens": 20, "reasoning_tokens": 4, "total_tokens": 30},
     })
     assert "Requests  total:" in text
     assert "success:" in text
     assert "42 ms" in text
     assert "prompt:" in text
+    assert "reasoning:" in text
+    assert "thinking:" in text
     assert "10" in text
 
 
@@ -116,7 +118,7 @@ def test_format_usage_does_not_contain_secrets():
 def test_build_benchmark_computes_rates():
     bench = _build_benchmark({
         "requests": {"total": 100, "success": 90, "errors": 10, "fallbacks": 5, "average_latency_ms": 44.4},
-        "usage": {"prompt_tokens": 1000, "completion_tokens": 500, "total_tokens": 1500},
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 500, "reasoning_tokens": 120, "total_tokens": 1500},
         "aliases": {"a": 3},
         "backends": {"b": 3},
         "cooldowns": {"c": 1},
@@ -133,6 +135,9 @@ def test_build_benchmark_computes_rates():
     assert bench["requests"]["average_latency_ms"] == 44.4
     assert bench["usage"]["prompt_tokens"] == 1000
     assert bench["usage"]["completion_tokens"] == 500
+    assert bench["usage"]["output_tokens"] == 500
+    assert bench["usage"]["reasoning_tokens"] == 120
+    assert bench["usage"]["thinking_tokens"] == 120
     assert bench["usage"]["total_tokens"] == 1500
     assert bench["error_rate"] == 0.1
     assert bench["fallback_rate"] == 0.05

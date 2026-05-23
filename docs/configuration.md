@@ -209,12 +209,22 @@ OpenAI-kompatiblen Backend-Antworten:
 
 - `usage.prompt_tokens` – summierte Prompt-Tokens aller erfolgreicher Requests
 - `usage.completion_tokens` – summierte Completion-Tokens aller erfolgreicher Anfragen
+- `usage.output_tokens` – Alias fuer Completion-/Output-Tokens, passend fuer
+  Modellrollen-Benchmarks
+- `usage.reasoning_tokens` – summierte Reasoning-/Thinking-Tokens, wenn der
+  Backend-Provider diese in `usage`, `completion_tokens_details` oder
+  `output_tokens_details` liefert
+- `usage.thinking_tokens` – Alias fuer Reasoning-/Thinking-Tokens, passend fuer
+  Website-Feedback und Benchmark-Tabellen
 - `usage.total_tokens` – Gesamtsumme
 
 Im Prometheus-Textformat erscheinen diese als:
 
 - `llm_router_usage_prompt_tokens_total`
 - `llm_router_usage_completion_tokens_total`
+- `llm_router_usage_output_tokens_total`
+- `llm_router_usage_reasoning_tokens_total`
+- `llm_router_usage_thinking_tokens_total`
 - `llm_router_usage_total_tokens_total`
 
 Fehlerhafte Anfragen (Backend-Fehler, Limits, Timeouts) erhoehen keine
