@@ -94,7 +94,7 @@ llm-router check-config --config ...    # Config validieren
 llm-router list-models --config ...     # Modell-Aliase auflisten
 llm-router test-backends --config ...   # Backends testen
 llm-router usage --metrics-url URL      # Aggregierte Metriken (Requests, Fallbacks, Tokens) anzeigen
-llm-router smoke-test --model ...       # End-to-End-Test
+llm-router benchmark-export --metrics-url URL # Secretfreie Benchmark-JSON mit Git-Ref und Rates
 ```
 
 ---

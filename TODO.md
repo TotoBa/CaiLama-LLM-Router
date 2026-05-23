@@ -38,10 +38,12 @@ aufgenommen:
   `llm-router usage --metrics-url URL` zeigt Requests, Fallbacks, Latenz,
   Alias-/Backend-Verteilung und Token-Gesamtwerte lesbar an.
   Implementiert in `src/llm_router/cli.py`; `_format_usage()` ist einzeln testbar.
-- [ ] Benchmark-Export fuer den Master vorbereiten: eine secretfreie
+- [x] Benchmark-Export fuer den Master vorbereiten: eine secretfreie
   Zusammenfassung aus `/metrics` oder CLI liefern, die Git-Ref, Alias,
   Backend, Latenz, Fehler-/Fallback-Rate, Cooldowns und Usage-Werte ausweist.
   Keine Prompts, Responses, Provider-Keys oder lokalen Runtime-Pfade.
+  Implementiert als `llm-router benchmark-export --metrics-url URL --git-ref REF`
+  mit Auto-Detection des Git-Refs via `git rev-parse HEAD`.
 - [ ] Spaetere spezialisierte Modellbackends als generischen Router-Fall
   vorbereiten: spezialisierte Modelle duerfen nur als Backend-/Alias-
   Konfiguration erscheinen, muessen gegen dieselben Benchmarks antreten und

@@ -218,5 +218,75 @@ def usage(
     typer.echo(output)
 
 
+# ── Benchmark export (privacy-safe JSON for CaiLama-Master) ──
+
+def _build_benchmark(data: dict[str, Any]) -> dict[str, Any]:
+    from datetime import datetime, timezone
+    requests = data.get("requests", {})
+    usage = data.get("usage", {})
+    total = max(requests.get("total", 0), 1)
+    return {
+        "git_ref": None,
+        "version": "0.1.0",
+        "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "requests": {
+            "total": requests.get("total", 0),
+            "success": requests.get("success", 0),
+            "errors": requests.get("errors", 0),
+            "fallbacks": requests.get("fallbacks", 0),
+            "average_latency_ms": requests.get("average_latency_ms", 0.0),
+        },
+        "usage": {
+            "prompt_tokens": usage.get("prompt_tokens", 0),
+            "completion_tokens": usage.get("completion_tokens", 0),
+            "total_tokens": usage.get("total_tokens", 0),
+        },
+        "error_rate": round(requests.get("errors", 0) / total, 4),
+        "fallback_rate": round(requests.get("fallbacks", 0) / total, 4),
+        "aliases": data.get("aliases", {}),
+        "backends": data.get("backends", {}),
+        "cooldowns": data.get("cooldowns", {}),
+        "backend_failures": data.get("backend_failures", {}),
+        "limit_detections": data.get("limit_detections", {}),
+    }
+
+
+async def _benchmark_impl(metrics_url: str, git_ref: str | None) -> str:
+    import subprocess
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(metrics_url, timeout=10)
+        if resp.status_code != 200:
+            raise typer.Exit(1)
+        bench = _build_benchmark(resp.json())
+        if git_ref is None:
+            try:
+                result = subprocess.run(
+                    ["git", "rev-parse", "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if result.returncode == 0:
+                    git_ref = result.stdout.strip()[:12]
+            except (subprocess.SubprocessError, FileNotFoundError):
+                pass
+        bench["git_ref"] = git_ref
+        return json.dumps(bench, indent=2)
+
+
+@cli.command()
+def benchmark_export(
+    metrics_url: str = typer.Option(default="http://127.0.0.1:18080/metrics", help="URL for /metrics endpoint"),
+    git_ref: str = typer.Option(default=None, help="Git ref of the codebase (auto-detected if available)"),
+) -> None:
+    """Export privacy-safe benchmark JSON for CaiLama-Master."""
+    try:
+        output = asyncio.run(_benchmark_impl(metrics_url, git_ref))
+    except Exception as exc:
+        typer.echo(f"Error fetching metrics: {exc}", err=True)
+        raise typer.Exit(1)
+    typer.echo(output)
+
+
 if __name__ == "__main__":
     main()
