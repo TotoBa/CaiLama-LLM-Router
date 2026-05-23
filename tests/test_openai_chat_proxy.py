@@ -543,6 +543,31 @@ async def test_streaming_backend_error_is_returned_as_sse(mock_client):
         assert '"error": "internal error"' in response.text
 
 
+async def test_streaming_success_is_proxied_without_reading_content(mock_client):
+    with respx.mock:
+        route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(
+                200,
+                text='data: {"choices":[{"delta":{"content":"Hi"}}]}\n\ndata: [DONE]\n\n',
+                headers={"content-type": "text/event-stream"},
+            )
+        )
+        response = await mock_client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "gpt-4o",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "stream": True,
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/event-stream")
+        assert response.headers["x-llm-router-backend"] == "openai"
+        assert response.text.endswith("data: [DONE]\n\n")
+        assert route.called
+
+
 # Fixtures for passthrough strategy
 
 @pytest.fixture

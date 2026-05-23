@@ -418,7 +418,53 @@ async def chat_completions(
             # success
             status_code = proxy_resp.status_code
             duration_ms = (time.monotonic() - request_started) * 1000
-            out_body = proxy_resp.content
+
+            response_headers = _router_response_headers(
+                backend_name=backend_name,
+                model_alias=model_alias,
+                provider_model=provider_model,
+                fallback_used=fallback_used,
+            )
+            if stream:
+                get_metrics().record_request(
+                    alias=model_alias,
+                    backend=backend_name,
+                    latency_ms=duration_ms,
+                    success=True,
+                    fallback_used=fallback_used,
+                    limit_detected=False,
+                )
+                logger = _get_logger()
+                if logger:
+                    log_request(
+                        logger,
+                        request_id=request_id,
+                        client=client,
+                        path="/v1/chat/completions",
+                        request_model=model_alias,
+                        provider_model=provider_model,
+                        backend=backend_name,
+                        status_code=status_code,
+                        limit_detected=False,
+                        fallback_used=fallback_used,
+                        duration_ms=duration_ms,
+                    )
+
+                async def _stream_response(resp: httpx.Response) -> Any:
+                    try:
+                        async for chunk in resp.aiter_raw():
+                            yield chunk
+                    finally:
+                        await resp.aclose()
+
+                return StreamingResponse(
+                    _stream_response(proxy_resp),
+                    status_code=status_code,
+                    headers=response_headers,
+                    media_type="text/event-stream",
+                )
+
+            out_body = await proxy_resp.aread()
             parsed_body = json.loads(out_body) if out_body else {}
             prompt_tokens, completion_tokens, total_tokens = _extract_usage(parsed_body)
             get_metrics().record_request(
@@ -433,12 +479,6 @@ async def chat_completions(
                 total_tokens=total_tokens,
             )
 
-            response_headers = _router_response_headers(
-                backend_name=backend_name,
-                model_alias=model_alias,
-                provider_model=provider_model,
-                fallback_used=fallback_used,
-            )
             logger = _get_logger()
             if logger:
                 log_request(
@@ -453,21 +493,6 @@ async def chat_completions(
                     limit_detected=False,
                     fallback_used=fallback_used,
                     duration_ms=(time.monotonic() - request_started) * 1000,
-                )
-
-            if stream:
-                async def _stream_response(resp: httpx.Response) -> Any:
-                    try:
-                        async for chunk in resp.aiter_raw():
-                            yield chunk
-                    finally:
-                        await resp.aclose()
-
-                return StreamingResponse(
-                    _stream_response(proxy_resp),
-                    status_code=status_code,
-                    headers=response_headers,
-                    media_type="text/event-stream",
                 )
 
             return JSONResponse(
