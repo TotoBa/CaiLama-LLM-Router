@@ -17,6 +17,9 @@ class RequestMetrics:
     total_success: int = 0
     total_errors: int = 0
     total_latency_ms: float = 0.0
+    total_prompt_tokens: int = 0
+    total_completion_tokens: int = 0
+    total_tokens: int = 0
     alias_counts: dict[str, int] = field(default_factory=dict)
     backend_counts: dict[str, int] = field(default_factory=dict)
     cooldown_counts: dict[str, int] = field(default_factory=dict)
@@ -32,6 +35,9 @@ class RequestMetrics:
         success: bool,
         fallback_used: bool,
         limit_detected: bool,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        total_tokens: int = 0,
     ) -> None:
         self.total_requests += 1
         self.alias_counts[alias] = self.alias_counts.get(alias, 0) + 1
@@ -39,6 +45,9 @@ class RequestMetrics:
         self.total_latency_ms += latency_ms
         if success:
             self.total_success += 1
+            self.total_prompt_tokens += prompt_tokens
+            self.total_completion_tokens += completion_tokens
+            self.total_tokens += total_tokens
         else:
             self.total_errors += 1
         if fallback_used:
@@ -61,6 +70,11 @@ class RequestMetrics:
                 "errors": self.total_errors,
                 "fallbacks": self.total_fallbacks,
                 "average_latency_ms": round(self.total_latency_ms / max(self.total_requests, 1), 2),
+            },
+            "usage": {
+                "prompt_tokens": self.total_prompt_tokens,
+                "completion_tokens": self.total_completion_tokens,
+                "total_tokens": self.total_tokens,
             },
             "aliases": self.alias_counts,
             "backends": self.backend_counts,
@@ -88,6 +102,7 @@ def get_metrics() -> RequestMetrics:
 def snapshot_to_prometheus(snapshot: dict[str, Any]) -> str:
     """Render a privacy-safe Prometheus text exposition from a metrics snapshot."""
     requests = snapshot.get("requests", {})
+    usage = snapshot.get("usage", {})
     lines = [
         "# HELP llm_router_requests_total Total proxied chat completion requests.",
         "# TYPE llm_router_requests_total counter",
@@ -104,6 +119,15 @@ def snapshot_to_prometheus(snapshot: dict[str, Any]) -> str:
         "# HELP llm_router_request_average_latency_ms Average request latency.",
         "# TYPE llm_router_request_average_latency_ms gauge",
         f"llm_router_request_average_latency_ms {requests.get('average_latency_ms', 0)}",
+        "# HELP llm_router_usage_prompt_tokens_total Aggregated prompt tokens from successful requests.",
+        "# TYPE llm_router_usage_prompt_tokens_total counter",
+        f"llm_router_usage_prompt_tokens_total {usage.get('prompt_tokens', 0)}",
+        "# HELP llm_router_usage_completion_tokens_total Aggregated completion tokens from successful requests.",
+        "# TYPE llm_router_usage_completion_tokens_total counter",
+        f"llm_router_usage_completion_tokens_total {usage.get('completion_tokens', 0)}",
+        "# HELP llm_router_usage_total_tokens_total Aggregated total tokens from successful requests.",
+        "# TYPE llm_router_usage_total_tokens_total counter",
+        f"llm_router_usage_total_tokens_total {usage.get('total_tokens', 0)}",
     ]
 
     for alias, count in sorted(snapshot.get("aliases", {}).items()):

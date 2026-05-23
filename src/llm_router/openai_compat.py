@@ -275,6 +275,17 @@ async def _send_backend_request(
     return await _HTTP_CLIENT.send(request, stream=stream)
 
 
+def _extract_usage(body: dict[str, Any]) -> tuple[int, int, int]:
+    """Extract token counts from an OpenAI-compatible response body."""
+    usage = body.get("usage") if isinstance(body, dict) else None
+    if not isinstance(usage, dict):
+        return 0, 0, 0
+    prompt_tokens = usage.get("prompt_tokens") or 0
+    completion_tokens = usage.get("completion_tokens") or 0
+    total_tokens = usage.get("total_tokens") or 0
+    return int(prompt_tokens), int(completion_tokens), int(total_tokens)
+
+
 @router.get("/health", response_model=None)
 async def health() -> dict[str, Any]:
     config = _get_config()
@@ -407,6 +418,9 @@ async def chat_completions(
             # success
             status_code = proxy_resp.status_code
             duration_ms = (time.monotonic() - request_started) * 1000
+            out_body = proxy_resp.content
+            parsed_body = json.loads(out_body) if out_body else {}
+            prompt_tokens, completion_tokens, total_tokens = _extract_usage(parsed_body)
             get_metrics().record_request(
                 alias=model_alias,
                 backend=backend_name,
@@ -414,7 +428,11 @@ async def chat_completions(
                 success=True,
                 fallback_used=fallback_used,
                 limit_detected=False,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
             )
+
             response_headers = _router_response_headers(
                 backend_name=backend_name,
                 model_alias=model_alias,
@@ -452,10 +470,9 @@ async def chat_completions(
                     media_type="text/event-stream",
                 )
 
-            out_body = proxy_resp.content
             return JSONResponse(
                 status_code=status_code,
-                content=json.loads(out_body),
+                content=parsed_body,
                 headers=response_headers,
             )
 

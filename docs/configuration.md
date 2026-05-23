@@ -195,6 +195,22 @@ Die Metriken enthalten Zaehler fuer Requests, Fehler, Fallbacks, Aliase,
 Backends, Cooldowns und Limit-Erkennung, aber keine Prompt-, Response- oder
 Header-Inhalte.
 
+Seit Version 0.1.0 aggregiert der Router auch privacy-safe Token-Usage aus
+OpenAI-kompatiblen Backend-Antworten:
+
+- `usage.prompt_tokens` – summierte Prompt-Tokens aller erfolgreicher Requests
+- `usage.completion_tokens` – summierte Completion-Tokens aller erfolgreicher Anfragen
+- `usage.total_tokens` – Gesamtsumme
+
+Im Prometheus-Textformat erscheinen diese als:
+
+- `llm_router_usage_prompt_tokens_total`
+- `llm_router_usage_completion_tokens_total`
+- `llm_router_usage_total_tokens_total`
+
+Fehlerhafte Anfragen (Backend-Fehler, Limits, Timeouts) erhoehen keine
+Usage-Zaehler.
+
 ## Env-Variablen
 
 ```bash

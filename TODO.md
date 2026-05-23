@@ -31,7 +31,7 @@ aufgenommen:
   `src/llm_router/openai_compat.py`, `src/llm_router/config.py`.
   Tests decken vorhandene und fehlende Env-Variable ab; Test-Key erscheint
   nicht in der Router-Antwort.
-- [ ] Privacy-safe Token-/Usage-Metriken ergaenzen: OpenAI-kompatibles `usage`
+- [x] Privacy-safe Token-/Usage-Metriken ergaenzen: OpenAI-kompatibles `usage`
   aus Antworten aggregieren, `/metrics` JSON und Prometheus-Text erweitern.
   Keine Prompt- oder Response-Inhalte speichern.
 - [ ] Optionalen `llm-router usage` Diagnosebefehl ergaenzen:
