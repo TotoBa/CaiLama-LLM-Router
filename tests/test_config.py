@@ -29,17 +29,22 @@ def test_load_dual_ollama_benchmark_example_config():
         "ollama-vm-a",
         "ollama-vm-b",
     ]
-    assert config.models["hemanth/chessplayer:latest"].provider_model == (
-        "hemanth/chessplayer:latest"
-    )
-    assert config.models["hemanth/chessplayer:latest"].backends == ["ollama-local"]
     assert config.models["starling-lm:7b"].routing_strategy == "priority"
+    assert config.models["deepseek-r1:14b"].backends == ["ollama-local"]
+    assert config.models["qwen3-vl:8b"].request_overrides == {}
     assert config.models["qwen3.6:27b"].backends == ["ollama-local"]
     assert config.models["qwen3.6:27b:think-off"].request_overrides == {"think": False}
     assert config.models["qwen3.6:27b:think-on"].request_overrides == {"think": True}
     assert config.models["qwen3.6:27b:think-low"].request_overrides == {"think": "low"}
     assert config.models["qwen3.6:27b:think-medium"].request_overrides == {"think": "medium"}
     assert config.models["qwen3.6:27b:think-high"].request_overrides == {"think": "high"}
+    assert config.models["kimi-k2.6:cloud:think-high"].backends == [
+        "ollama-vm-a",
+        "ollama-vm-b",
+    ]
+    assert config.models["gpt-oss:20b-cloud:think-low"].request_overrides == {"think": "low"}
+    assert "gpt-oss:20b-cloud:think-off" not in config.models
+    assert "hemanth/chessplayer:latest" not in config.models
 
 
 def test_null_request_timeout_means_no_long_running_deadline(tmp_path: Path):

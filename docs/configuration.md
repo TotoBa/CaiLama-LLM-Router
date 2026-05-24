@@ -119,9 +119,11 @@ models:
 - Fuer Benchmark-Laeufe mit zwei lokalen Ollama-Instanzen gibt es
   `configs/router.vm-dual-ollama.example.yaml`. Dort zeigen alle Benchmark-
   Modelle auf `ollama-vm-a` und `ollama-vm-b`, nicht auf ein langsames
-  entferntes Backend. Neue Testmodelle wie `deepseek-v4-pro:cloud`,
-  `hemanth/chessplayer:latest`, `starling-lm:7b`, `gemma4:e2b` und
-  `gemma4:e4b` sind dort als normale Aliase vorbereitet.
+  entferntes Backend. Cloud-Modelle laufen ueber die Docker-Ollamas, lokale
+  Modelle ueber den Host-Ollama auf `127.0.0.1:11434`. Thinking-Varianten
+  werden als eigene Aliase ueber `request_overrides.think` modelliert. Die
+  operativen Aliase `default` und `kimi-cli-default` sind Router-Defaults und
+  keine CaiLama-Benchmarkkandidaten.
 
 ## Verteilung
 

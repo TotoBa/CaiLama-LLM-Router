@@ -133,6 +133,12 @@ models:
     policy: "benchmark"
     routing_strategy: "round_robin"
 
+  qwen3.5:cloud:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
   glm-5.1:cloud:
     provider_model: "glm-5.1:cloud"
     backends: ["ollama-vm-a", "ollama-vm-b"]
@@ -157,20 +163,98 @@ models:
     policy: "benchmark"
     routing_strategy: "round_robin"
 
-  hemanth/chessplayer:latest:
-    provider_model: "hemanth/chessplayer:latest"
+  gpt-oss:120b-cloud:
+    provider_model: "gpt-oss:120b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-r1:1.5b:
+    provider_model: "deepseek-r1:1.5b"
     backends: ["ollama-local"]
     policy: "benchmark"
     routing_strategy: "priority"
 
-  hemanth/chessplayer:
-    provider_model: "hemanth/chessplayer:latest"
+  deepseek-r1:7b:
+    provider_model: "deepseek-r1:7b"
     backends: ["ollama-local"]
     policy: "benchmark"
     routing_strategy: "priority"
 
-  starling-lm:7b:
-    provider_model: "starling-lm:7b"
+  deepseek-r1:8b:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3.6:27b:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:
+    provider_model: "gemma4:26b"
     backends: ["ollama-local"]
     policy: "benchmark"
     routing_strategy: "priority"
@@ -187,9 +271,903 @@ models:
     policy: "benchmark"
     routing_strategy: "priority"
 
-  qwen3.6:27b:
-    provider_model: "qwen3.6:27b"
+  gpt-oss-safeguard:20b:
+    provider_model: "gpt-oss-safeguard:20b"
     backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  starling-lm:7b:
+    provider_model: "starling-lm:7b"
+    backends: ["ollama-local"]
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  kimi-k2.6:cloud:think-off:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  kimi-k2.6:cloud:think-on:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  kimi-k2.6:cloud:think-low:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  kimi-k2.6:cloud:think-medium:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  kimi-k2.6:cloud:think-high:
+    provider_model: "kimi-k2.6:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:think-off:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:think-on:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:think-low:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:think-medium:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-flash:cloud:think-high:
+    provider_model: "deepseek-v4-flash:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:think-off:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:think-on:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:think-low:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:think-medium:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-v4-pro:cloud:think-high:
+    provider_model: "deepseek-v4-pro:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:think-off:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:think-on:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:think-low:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:think-medium:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gemma4:31b-cloud:think-high:
+    provider_model: "gemma4:31b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:397b-cloud:think-off:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:397b-cloud:think-on:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:397b-cloud:think-low:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:397b-cloud:think-medium:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:397b-cloud:think-high:
+    provider_model: "qwen3.5:397b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:cloud:think-off:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:cloud:think-on:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:cloud:think-low:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:cloud:think-medium:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  qwen3.5:cloud:think-high:
+    provider_model: "qwen3.5:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:think-off:
+    provider_model: "glm-5.1:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:think-on:
+    provider_model: "glm-5.1:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:think-low:
+    provider_model: "glm-5.1:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:think-medium:
+    provider_model: "glm-5.1:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  glm-5.1:cloud:think-high:
+    provider_model: "glm-5.1:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:think-off:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:think-on:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:think-low:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:think-medium:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  minimax-m2.7:cloud:think-high:
+    provider_model: "minimax-m2.7:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "standard"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:think-off:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:think-on:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:think-low:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:think-medium:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  nemotron-3-super:cloud:think-high:
+    provider_model: "nemotron-3-super:cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:20b-cloud:think-low:
+    provider_model: "gpt-oss:20b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:20b-cloud:think-medium:
+    provider_model: "gpt-oss:20b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:20b-cloud:think-high:
+    provider_model: "gpt-oss:20b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:120b-cloud:think-low:
+    provider_model: "gpt-oss:120b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:120b-cloud:think-medium:
+    provider_model: "gpt-oss:120b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  gpt-oss:120b-cloud:think-high:
+    provider_model: "gpt-oss:120b-cloud"
+    backends: ["ollama-vm-a", "ollama-vm-b"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "round_robin"
+
+  deepseek-r1:1.5b:think-off:
+    provider_model: "deepseek-r1:1.5b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:1.5b:think-on:
+    provider_model: "deepseek-r1:1.5b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:1.5b:think-low:
+    provider_model: "deepseek-r1:1.5b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:1.5b:think-medium:
+    provider_model: "deepseek-r1:1.5b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:1.5b:think-high:
+    provider_model: "deepseek-r1:1.5b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:7b:think-off:
+    provider_model: "deepseek-r1:7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:7b:think-on:
+    provider_model: "deepseek-r1:7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:7b:think-low:
+    provider_model: "deepseek-r1:7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:7b:think-medium:
+    provider_model: "deepseek-r1:7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:7b:think-high:
+    provider_model: "deepseek-r1:7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:8b:think-off:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:8b:think-on:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:8b:think-low:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:8b:think-medium:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:8b:think-high:
+    provider_model: "deepseek-r1:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:think-off:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:think-on:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:think-low:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:think-medium:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  deepseek-r1:14b:think-high:
+    provider_model: "deepseek-r1:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:think-off:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:think-on:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:think-low:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:think-medium:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:0.6b:think-high:
+    provider_model: "qwen3:0.6b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:think-off:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:think-on:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:think-low:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:think-medium:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:1.7b:think-high:
+    provider_model: "qwen3:1.7b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:think-off:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:think-on:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:think-low:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:think-medium:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:4b:think-high:
+    provider_model: "qwen3:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:think-off:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:think-on:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:think-low:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:think-medium:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:8b:think-high:
+    provider_model: "qwen3:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:think-off:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:think-on:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:think-low:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:think-medium:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3:14b:think-high:
+    provider_model: "qwen3:14b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:think-off:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:think-on:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:think-low:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:think-medium:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:2b:think-high:
+    provider_model: "qwen3-vl:2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:think-off:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:think-on:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:think-low:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:think-medium:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:4b:think-high:
+    provider_model: "qwen3-vl:4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:think-off:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:think-on:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:think-low:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:think-medium:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3-vl:8b:think-high:
+    provider_model: "qwen3-vl:8b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
     policy: "benchmark"
     routing_strategy: "priority"
 
@@ -227,6 +1205,190 @@ models:
 
   qwen3.6:27b:think-high:
     provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:think-off:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:think-on:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:think-low:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:think-medium:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  magistral:24b:think-high:
+    provider_model: "magistral:24b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:think-off:
+    provider_model: "gemma4:26b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:think-on:
+    provider_model: "gemma4:26b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:think-low:
+    provider_model: "gemma4:26b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:think-medium:
+    provider_model: "gemma4:26b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:26b:think-high:
+    provider_model: "gemma4:26b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e2b:think-off:
+    provider_model: "gemma4:e2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e2b:think-on:
+    provider_model: "gemma4:e2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e2b:think-low:
+    provider_model: "gemma4:e2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e2b:think-medium:
+    provider_model: "gemma4:e2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e2b:think-high:
+    provider_model: "gemma4:e2b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e4b:think-off:
+    provider_model: "gemma4:e4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e4b:think-on:
+    provider_model: "gemma4:e4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e4b:think-low:
+    provider_model: "gemma4:e4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e4b:think-medium:
+    provider_model: "gemma4:e4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gemma4:e4b:think-high:
+    provider_model: "gemma4:e4b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gpt-oss-safeguard:20b:think-low:
+    provider_model: "gpt-oss-safeguard:20b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gpt-oss-safeguard:20b:think-medium:
+    provider_model: "gpt-oss-safeguard:20b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  gpt-oss-safeguard:20b:think-high:
+    provider_model: "gpt-oss-safeguard:20b"
     backends: ["ollama-local"]
     request_overrides:
       think: "high"

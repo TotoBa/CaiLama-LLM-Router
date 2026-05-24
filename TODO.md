@@ -89,9 +89,10 @@ aufgenommen:
   den Pi. `docker/docker-compose.dual-ollama.example.yml` startet zwei
   lokale Ollama-Instanzen auf Loopback-Ports und nimmt API-Keys nur ueber
   lokale Env-Variablen (`OLLAMA_VM_A_API_KEY`, `OLLAMA_VM_B_API_KEY`) auf.
-  Die zusaetzlichen Testmodelle `deepseek-v4-pro:cloud`,
-  `hemanth/chessplayer:latest`, `starling-lm:7b`, `gemma4:e2b` und
-  `gemma4:e4b` sowie `qwen3.6:27b` sind als Aliase vorbereitet.
+  Die lokal und cloudseitig verfuegbaren Modelle sind als Aliase vorbereitet;
+  `hemanth/chessplayer:latest` wurde nach erneutem fehlerhaftem Pull aus der
+  lokalen Runtime entfernt, weil der Blob den Host-Ollama in einen Crash-Loop
+  brachte. Es bleibt daher kein aktiver Benchmark-Alias.
   Cloud-Aliase gehen ueber die Docker-Ollamas; lokale Aliase gehen nur ueber
   den vorhandenen Host-Ollama `127.0.0.1:11434`, damit lokale Modelle nur
   einmal geladen werden muessen. Keine Keys im Repo.
@@ -101,7 +102,8 @@ aufgenommen:
   `think: "medium"` und `think: "high"` als eigene Aliase getestet werden
   koennen. `model`, `messages` und `stream` sind reserviert und werden in der
   Config-Validierung abgelehnt. Die VM-Dual-Ollama-Beispielconfig enthaelt
-  Qwen-3.6-27B-Aliase fuer alle genannten Thinking-Modi.
+  Aliase fuer alle nachweislich thinking-faehigen lokalen und Cloud-Modelle;
+  GPT-OSS bekommt nur die dokumentierten Level `low`, `medium`, `high`.
 - [x] Live-Smoke nach Host-Neustart nachgezogen: Docker-Ollamas brauchen fuer
   Ollama-Cloud nicht nur die privaten Env-Keys, sondern auch eine signierte
   Ollama-Anmeldung im privaten Docker-Volume oder ein `ollama signin` im

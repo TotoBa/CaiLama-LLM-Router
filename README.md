@@ -220,6 +220,13 @@ Ein Modell kann gezielt nur auf einem Backend angeboten werden, z.B. `backends: 
 Ollama-spezifische Benchmark-Varianten koennen als eigene Router-Aliase mit
 `request_overrides` definiert werden. Das ist fuer Thinking-Mode-Vergleiche
 vorgesehen, z.B. `think: "low"`, `think: "medium"` oder `think: "high"`.
+Die VM-Dual-Ollama-Beispielkonfiguration legt solche Varianten fuer alle
+nachweislich thinking-faehigen lokalen und Cloud-Modelle an. GPT-OSS-Modelle
+bekommen nur die dokumentierten Level `low`, `medium` und `high`; Modelle ohne
+Thinking-Capability bleiben normale Benchmark-Kandidaten ohne kuenstliche
+Thinking-Aliase. Operative Aliase wie `default` und `kimi-cli-default` bleiben
+Router-Defaults und werden von CaiLama bei automatischer Kandidatenwahl
+gefiltert.
 Die Felder `model`, `messages` und `stream` sind dabei reserviert, damit
 Konfiguration keine Prompts ersetzt und der Router-Streamingvertrag stabil
 bleibt.
