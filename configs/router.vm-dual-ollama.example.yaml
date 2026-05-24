@@ -24,6 +24,12 @@ backends:
     priority: 20
     enabled: true
 
+  ollama-local:
+    type: "openai_compatible"
+    base_url: "http://127.0.0.1:11434/v1"
+    priority: 30
+    enabled: true
+
 models:
   default:
     provider_model: "kimi-k2.6:cloud"
@@ -153,33 +159,33 @@ models:
 
   hemanth/chessplayer:latest:
     provider_model: "hemanth/chessplayer:latest"
-    backends: ["ollama-vm-a", "ollama-vm-b"]
+    backends: ["ollama-local"]
     policy: "benchmark"
-    routing_strategy: "round_robin"
+    routing_strategy: "priority"
 
   hemanth/chessplayer:
     provider_model: "hemanth/chessplayer:latest"
-    backends: ["ollama-vm-a", "ollama-vm-b"]
+    backends: ["ollama-local"]
     policy: "benchmark"
-    routing_strategy: "round_robin"
+    routing_strategy: "priority"
 
   starling-lm:7b:
     provider_model: "starling-lm:7b"
-    backends: ["ollama-vm-a", "ollama-vm-b"]
+    backends: ["ollama-local"]
     policy: "benchmark"
-    routing_strategy: "round_robin"
+    routing_strategy: "priority"
 
   gemma4:e2b:
     provider_model: "gemma4:e2b"
-    backends: ["ollama-vm-a", "ollama-vm-b"]
+    backends: ["ollama-local"]
     policy: "benchmark"
-    routing_strategy: "round_robin"
+    routing_strategy: "priority"
 
   gemma4:e4b:
     provider_model: "gemma4:e4b"
-    backends: ["ollama-vm-a", "ollama-vm-b"]
+    backends: ["ollama-local"]
     policy: "benchmark"
-    routing_strategy: "round_robin"
+    routing_strategy: "priority"
 
 policies:
   standard:

@@ -40,10 +40,12 @@ OLLAMA_VM_A_API_KEY=...
 OLLAMA_VM_B_API_KEY=...
 ```
 
-Danach laufen die Backends typischerweise auf `127.0.0.1:11435` und
-`127.0.0.1:11436`. Cloud-Modelle nutzen die gesetzten Ollama-Keys der
-jeweiligen Instanz; lokal auszufuehrende Modelle muessen in jeder Instanz
-vorhanden sein, wenn die Routerroute `round_robin` ueber beide Backends nutzt.
+Danach laufen die Cloud-Backends typischerweise auf `127.0.0.1:11435` und
+`127.0.0.1:11436`. Sie dienen als zwei getrennte Ollama-Cloud-Ausgaenge mit
+separaten API-Keys. Lokale Benchmarkmodelle laufen dagegen nicht in diesen
+Containern, sondern ueber den bestehenden Host-Ollama auf
+`127.0.0.1:11434`. Dadurch muessen lokale Modelle nur einmal geladen werden
+und die VM versucht nicht, zwei lokale Modelle parallel zu betreiben.
 Ollamas lokale API ist standardmaessig nicht durch einen Bearer-Key
 abgesichert; die Keys werden fuer Ollama-Cloud-Zugriff beziehungsweise
 Client-/Router-Konventionen durchgereicht.

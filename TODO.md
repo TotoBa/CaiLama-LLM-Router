@@ -91,7 +91,10 @@ aufgenommen:
   lokale Env-Variablen (`OLLAMA_VM_A_API_KEY`, `OLLAMA_VM_B_API_KEY`) auf.
   Die zusaetzlichen Testmodelle `deepseek-v4-pro:cloud`,
   `hemanth/chessplayer:latest`, `starling-lm:7b`, `gemma4:e2b` und
-  `gemma4:e4b` sind als Aliase vorbereitet. Keine Keys im Repo.
+  `gemma4:e4b` sind als Aliase vorbereitet. Cloud-Aliase gehen ueber die
+  Docker-Ollamas; lokale Aliase gehen nur ueber den vorhandenen Host-Ollama
+  `127.0.0.1:11434`, damit lokale Modelle nur einmal geladen werden muessen.
+  Keine Keys im Repo.
 
 ## Verifizierter Stand
 

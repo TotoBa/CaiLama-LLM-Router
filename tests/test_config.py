@@ -21,9 +21,10 @@ def test_load_example_config(example_config_path: Path):
 def test_load_dual_ollama_benchmark_example_config():
     config = load_config("configs/router.vm-dual-ollama.example.yaml")
     assert config.runtime.request_timeout_seconds is None
-    assert sorted(config.backends) == ["ollama-vm-a", "ollama-vm-b"]
+    assert sorted(config.backends) == ["ollama-local", "ollama-vm-a", "ollama-vm-b"]
     assert config.backends["ollama-vm-a"].api_key_env == "OLLAMA_VM_A_API_KEY"
     assert config.backends["ollama-vm-b"].api_key_env == "OLLAMA_VM_B_API_KEY"
+    assert config.backends["ollama-local"].api_key_env is None
     assert config.models["deepseek-v4-pro:cloud"].backends == [
         "ollama-vm-a",
         "ollama-vm-b",
@@ -31,7 +32,8 @@ def test_load_dual_ollama_benchmark_example_config():
     assert config.models["hemanth/chessplayer:latest"].provider_model == (
         "hemanth/chessplayer:latest"
     )
-    assert config.models["starling-lm:7b"].routing_strategy == "round_robin"
+    assert config.models["hemanth/chessplayer:latest"].backends == ["ollama-local"]
+    assert config.models["starling-lm:7b"].routing_strategy == "priority"
 
 
 def test_null_request_timeout_means_no_long_running_deadline(tmp_path: Path):
