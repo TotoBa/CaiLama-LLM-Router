@@ -102,6 +102,13 @@ aufgenommen:
   koennen. `model`, `messages` und `stream` sind reserviert und werden in der
   Config-Validierung abgelehnt. Die VM-Dual-Ollama-Beispielconfig enthaelt
   Qwen-3.6-27B-Aliase fuer alle genannten Thinking-Modi.
+- [x] Live-Smoke nach Host-Neustart nachgezogen: Docker-Ollamas brauchen fuer
+  Ollama-Cloud nicht nur die privaten Env-Keys, sondern auch eine signierte
+  Ollama-Anmeldung im privaten Docker-Volume oder ein `ollama signin` im
+  Container. Fehlende Anmeldung aeusserte sich als Backend-HTTP-500
+  `internal service error`; nach Provisionierung der lokalen Anmeldung lief
+  `deepseek-v4-flash:cloud` ueber den Router mit HTTP 200. Keine
+  Auth-Dateien, Tokens oder Keys ins Repo aufnehmen.
 
 ## Verifizierter Stand
 

@@ -224,6 +224,13 @@ Die Felder `model`, `messages` und `stream` sind dabei reserviert, damit
 Konfiguration keine Prompts ersetzt und der Router-Streamingvertrag stabil
 bleibt.
 
+Fuer Ollama-Cloud-Modelle muessen die Docker-Ollamas lokal angemeldet sein.
+Die API-Key-Env-Variablen bleiben private Operator-Konfiguration; falls ein
+Container trotz gesetzter Keys `You need to be signed in to Ollama` meldet,
+muss die signierte Ollama-Anmeldung in das private Docker-Volume gebracht
+oder im Container per `ollama signin` eingerichtet werden. Diese Dateien sind
+Secrets und gehoeren nie ins Repo.
+
 ---
 
 ## Sicherheit
