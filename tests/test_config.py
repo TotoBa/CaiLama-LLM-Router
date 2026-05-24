@@ -35,6 +35,11 @@ def test_load_dual_ollama_benchmark_example_config():
     assert config.models["hemanth/chessplayer:latest"].backends == ["ollama-local"]
     assert config.models["starling-lm:7b"].routing_strategy == "priority"
     assert config.models["qwen3.6:27b"].backends == ["ollama-local"]
+    assert config.models["qwen3.6:27b:think-off"].request_overrides == {"think": False}
+    assert config.models["qwen3.6:27b:think-on"].request_overrides == {"think": True}
+    assert config.models["qwen3.6:27b:think-low"].request_overrides == {"think": "low"}
+    assert config.models["qwen3.6:27b:think-medium"].request_overrides == {"think": "medium"}
+    assert config.models["qwen3.6:27b:think-high"].request_overrides == {"think": "high"}
 
 
 def test_null_request_timeout_means_no_long_running_deadline(tmp_path: Path):
@@ -126,6 +131,49 @@ logging:
     path = tmp_path / "bad_router.yaml"
     path.write_text(config_content)
     with pytest.raises(ValueError, match="not in backends"):
+        load_config(path)
+
+
+def test_reserved_request_override_keys_are_rejected(tmp_path: Path):
+    config_content = """
+server:
+  host: "127.0.0.1"
+  port: 18080
+
+runtime:
+  request_timeout_seconds: 600
+  connect_timeout_seconds: 10
+
+backends:
+  openai:
+    type: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    priority: 10
+
+models:
+  bad-model:
+    provider_model: gpt-4o
+    backends:
+      - openai
+    policy: standard
+    request_overrides:
+      messages: []
+
+policies:
+  standard:
+    max_attempts_per_backend: 1
+
+limit_detection:
+  status_codes: [429]
+  body_markers: []
+
+logging:
+  level: INFO
+"""
+    path = tmp_path / "bad_router.yaml"
+    path.write_text(config_content)
+    with pytest.raises(ValueError, match="reserved keys: messages"):
         load_config(path)
 
 

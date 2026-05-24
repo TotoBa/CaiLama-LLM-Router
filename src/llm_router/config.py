@@ -7,6 +7,8 @@ import yaml
 
 from llm_router.schemas import BackendConfig, RouterConfig
 
+_RESERVED_REQUEST_OVERRIDE_KEYS = {"messages", "model", "stream"}
+
 
 def load_config(path: Path | str) -> RouterConfig:
     path = Path(path)
@@ -47,6 +49,14 @@ def load_config(path: Path | str) -> RouterConfig:
             raise ValueError(
                 f"Model '{model_alias}' has unsupported routing_strategy "
                 f"'{model_conf.routing_strategy}'."
+            )
+        reserved_overrides = _RESERVED_REQUEST_OVERRIDE_KEYS.intersection(
+            model_conf.request_overrides
+        )
+        if reserved_overrides:
+            keys = ", ".join(sorted(reserved_overrides))
+            raise ValueError(
+                f"Model '{model_alias}' request_overrides uses reserved keys: {keys}."
             )
 
     # Ensure at least one enabled backend

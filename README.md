@@ -217,6 +217,13 @@ Wenn alle sofort nutzbaren Backends mit Fehlern antworten, gibt der Router stand
 
 Ein Modell kann gezielt nur auf einem Backend angeboten werden, z.B. `backends: ["vm"]`. Fuer knappe Ollama-Hosts setzen die systemd-Beispiele `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_NUM_PARALLEL=1` und `OLLAMA_MAX_QUEUE=2`.
 
+Ollama-spezifische Benchmark-Varianten koennen als eigene Router-Aliase mit
+`request_overrides` definiert werden. Das ist fuer Thinking-Mode-Vergleiche
+vorgesehen, z.B. `think: "low"`, `think: "medium"` oder `think: "high"`.
+Die Felder `model`, `messages` und `stream` sind dabei reserviert, damit
+Konfiguration keine Prompts ersetzt und der Router-Streamingvertrag stabil
+bleibt.
+
 ---
 
 ## Sicherheit

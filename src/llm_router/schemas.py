@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, Field, RootModel
 
 
 class ServerConfig(BaseModel):
@@ -25,6 +25,7 @@ class ModelRouteConfig(BaseModel):
     provider_model: str
     backends: list[str] | None = None
     backend_models: dict[str, str] | None = None
+    request_overrides: dict[str, Any] = Field(default_factory=dict)
     policy: str = "standard"
     routing_strategy: str = "priority"
 

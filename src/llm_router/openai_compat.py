@@ -243,6 +243,18 @@ def _select_backends(model_alias: str, config: RouterConfig) -> list[str]:
     return available[offset:] + available[:offset]
 
 
+def _build_proxied_payload(
+    *,
+    payload: dict[str, Any],
+    model_alias: str,
+    provider_model: str,
+    config: RouterConfig,
+) -> dict[str, Any]:
+    route = config.models.get(model_alias)
+    request_overrides = route.request_overrides if route else {}
+    return {**payload, **request_overrides, "model": provider_model}
+
+
 def _should_retry_backend(
     exc: Exception,
     attempt_number: int,
@@ -389,7 +401,12 @@ async def chat_completions(
     for backend_index, backend_name in enumerate(backends):
         backend = config.backends[backend_name]
         provider_model = resolve_backend_model(model_alias, backend_name, config)
-        proxied_payload = {**payload, "model": provider_model}
+        proxied_payload = _build_proxied_payload(
+            payload=payload,
+            model_alias=model_alias,
+            provider_model=provider_model,
+            config=config,
+        )
 
         max_attempts = max(policy.max_attempts_per_backend, 1)
         proxy_resp: httpx.Response | None = None

@@ -95,6 +95,13 @@ aufgenommen:
   Cloud-Aliase gehen ueber die Docker-Ollamas; lokale Aliase gehen nur ueber
   den vorhandenen Host-Ollama `127.0.0.1:11434`, damit lokale Modelle nur
   einmal geladen werden muessen. Keine Keys im Repo.
+- [x] Thinking-Mode-Benchmarkvarianten vorbereiten: `ModelRouteConfig`
+  unterstuetzt jetzt `request_overrides`, damit Ollama-kompatible
+  Requestfelder wie `think: false`, `think: true`, `think: "low"`,
+  `think: "medium"` und `think: "high"` als eigene Aliase getestet werden
+  koennen. `model`, `messages` und `stream` sind reserviert und werden in der
+  Config-Validierung abgelehnt. Die VM-Dual-Ollama-Beispielconfig enthaelt
+  Qwen-3.6-27B-Aliase fuer alle genannten Thinking-Modi.
 
 ## Verifizierter Stand
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 import respx
 import httpx
@@ -36,6 +38,13 @@ models:
     provider_model: gpt-4o
     backends:
       - openai
+    policy: standard
+  qwen-thinking-high:
+    provider_model: qwen3.6:27b
+    backends:
+      - openai
+    request_overrides:
+      think: high
     policy: standard
   claude-opus:
     provider_model: claude-3-opus-20240229
@@ -233,6 +242,33 @@ async def test_missing_backend_api_key_env_does_not_add_authorization(mock_clien
 
         assert response.status_code == 200
         assert "authorization" not in route.calls[0].request.headers
+
+
+async def test_chat_completions_applies_model_request_overrides(mock_client):
+    with respx.mock:
+        route = respx.post("https://api.openai.com/v1/chat/completions").mock(
+            return_value=Response(200, json={
+                "id": "chatcmpl-test",
+                "object": "chat.completion",
+                "model": "qwen3.6:27b",
+                "choices": [{"message": {"role": "assistant", "content": "Hello!"}}],
+            })
+        )
+
+        response = await mock_client.post(
+            "/v1/chat/completions",
+            json={
+                "model": "qwen-thinking-high",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "temperature": 0.2,
+            },
+        )
+
+        assert response.status_code == 200
+        forwarded = json.loads(route.calls[0].request.content.decode("utf-8"))
+        assert forwarded["model"] == "qwen3.6:27b"
+        assert forwarded["think"] == "high"
+        assert forwarded["temperature"] == 0.2
 
 
 async def test_chat_completions_fallback_on_429(mock_client):

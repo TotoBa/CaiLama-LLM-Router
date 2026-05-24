@@ -193,6 +193,46 @@ models:
     policy: "benchmark"
     routing_strategy: "priority"
 
+  qwen3.6:27b:think-off:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: false
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3.6:27b:think-on:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: true
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3.6:27b:think-low:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "low"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3.6:27b:think-medium:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "medium"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
+  qwen3.6:27b:think-high:
+    provider_model: "qwen3.6:27b"
+    backends: ["ollama-local"]
+    request_overrides:
+      think: "high"
+    policy: "benchmark"
+    routing_strategy: "priority"
+
 policies:
   standard:
     max_attempts_per_backend: 1
