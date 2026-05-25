@@ -114,6 +114,12 @@ aufgenommen:
   plus `granite4.1:3b` als lokale Runtime-Aliase vorgesehen. Cloud-Parallelitaet
   und die lokale Einser-Spur werden im CaiLama-Runner begrenzt; der Router
   bleibt generisch.
+  Update 2026-05-25: Der Router begrenzt jetzt zusätzlich pro Backend die
+  gleichzeitig laufenden Requests über `max_concurrent_requests`. Die
+  Dual-Ollama-VM-Konfiguration setzt je Docker-Cloud-Backend `3` und fuer
+  Host-Ollama `1`; `/health` zeigt Limit und aktuelle In-Flight-Zahl. Damit
+  kann der CaiLama-Runner weiterhin parallel arbeiten, ohne einen einzelnen
+  Ollama-Cloud-Account zu ueberlasten.
 - [x] Thinking-Mode-Benchmarkvarianten vorbereiten: `ModelRouteConfig`
   unterstuetzt jetzt `request_overrides`, damit Ollama-kompatible
   Requestfelder wie `think: false`, `think: true`, `think: "low"`,

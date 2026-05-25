@@ -19,6 +19,7 @@ class BackendConfig(BaseModel):
     endpoint_path: str = "/chat/completions"
     priority: int = 100
     enabled: bool = True
+    max_concurrent_requests: int | None = None
 
 
 class ModelRouteConfig(BaseModel):

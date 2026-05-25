@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import httpx
 from fastapi import APIRouter, Header, Query, Request
@@ -28,6 +29,9 @@ _HTTP_CLIENT: httpx.AsyncClient | None = None
 _LOGGER: Any = None
 _ROUND_ROBIN_OFFSETS: dict[str, int] = {}
 _BACKEND_STATE: dict[tuple[str, str], "BackendState"] = {}
+_BACKEND_SEMAPHORES: dict[str, asyncio.Semaphore] = {}
+_BACKEND_SEMAPHORE_LIMITS: dict[str, int] = {}
+_BACKEND_IN_FLIGHT: dict[str, int] = {}
 
 
 @dataclass
@@ -57,6 +61,9 @@ def set_config(config: RouterConfig, config_path: Path | str | None = None) -> N
     _CONFIG_PATH = Path(config_path) if config_path is not None else None
     _ROUND_ROBIN_OFFSETS.clear()
     _BACKEND_STATE.clear()
+    _BACKEND_SEMAPHORES.clear()
+    _BACKEND_SEMAPHORE_LIMITS.clear()
+    _BACKEND_IN_FLIGHT.clear()
 
 
 def set_http_client(client: httpx.AsyncClient) -> None:
@@ -173,6 +180,51 @@ def _state_key(model_alias: str, backend_name: str) -> tuple[str, str]:
 
 def _backend_state(model_alias: str, backend_name: str) -> BackendState:
     return _BACKEND_STATE.setdefault(_state_key(model_alias, backend_name), BackendState())
+
+
+def _backend_concurrency_limit(backend: BackendConfig) -> int | None:
+    value = backend.max_concurrent_requests
+    if value is None or value <= 0:
+        return None
+    return value
+
+
+def _backend_semaphore(backend_name: str, backend: BackendConfig) -> asyncio.Semaphore | None:
+    limit = _backend_concurrency_limit(backend)
+    if limit is None:
+        return None
+
+    semaphore = _BACKEND_SEMAPHORES.get(backend_name)
+    if semaphore is None or _BACKEND_SEMAPHORE_LIMITS.get(backend_name) != limit:
+        semaphore = asyncio.Semaphore(limit)
+        _BACKEND_SEMAPHORES[backend_name] = semaphore
+        _BACKEND_SEMAPHORE_LIMITS[backend_name] = limit
+        _BACKEND_IN_FLIGHT.setdefault(backend_name, 0)
+    return semaphore
+
+
+async def _acquire_backend_slot(backend_name: str, backend: BackendConfig) -> Callable[[], None]:
+    semaphore = _backend_semaphore(backend_name, backend)
+    if semaphore is None:
+        return _noop_backend_slot_release
+
+    await semaphore.acquire()
+    _BACKEND_IN_FLIGHT[backend_name] = _BACKEND_IN_FLIGHT.get(backend_name, 0) + 1
+    released = False
+
+    def release() -> None:
+        nonlocal released
+        if released:
+            return
+        released = True
+        _BACKEND_IN_FLIGHT[backend_name] = max(_BACKEND_IN_FLIGHT.get(backend_name, 1) - 1, 0)
+        semaphore.release()
+
+    return release
+
+
+def _noop_backend_slot_release() -> None:
+    return None
 
 
 def _is_backend_available(model_alias: str, backend_name: str, now: float) -> bool:
@@ -328,7 +380,15 @@ async def health() -> dict[str, Any]:
         "version": "0.1.0",
         "config_loaded": True,
         "models": list(config.models.keys()),
-        "backends": {name: {"type": b.type, "priority": b.priority} for name, b in config.backends.items()},
+        "backends": {
+            name: {
+                "type": b.type,
+                "priority": b.priority,
+                "max_concurrent_requests": b.max_concurrent_requests,
+                "in_flight": _BACKEND_IN_FLIGHT.get(name, 0),
+            }
+            for name, b in config.backends.items()
+        },
     }
 
 
@@ -412,10 +472,13 @@ async def chat_completions(
         proxy_resp: httpx.Response | None = None
         try_next_backend = False
         for backend_attempt in range(1, max_attempts + 1):
+            release_backend_slot = _noop_backend_slot_release
             try:
+                release_backend_slot = await _acquire_backend_slot(backend_name, backend)
                 proxy_resp = await _send_backend_request(backend, proxied_payload, stream=stream)
                 break
             except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException) as exc:
+                release_backend_slot()
                 cooldown_started = _record_backend_failure(model_alias, backend_name, policy)
                 metrics = get_metrics()  # type: ignore
                 metrics.record_backend_failure(backend_name)
@@ -489,21 +552,25 @@ async def chat_completions(
                         duration_ms=duration_ms,
                     )
 
-                async def _stream_response(resp: httpx.Response) -> Any:
+                async def _stream_response(resp: httpx.Response, release_slot: Callable[[], None]) -> Any:
                     try:
                         async for chunk in resp.aiter_raw():
                             yield chunk
                     finally:
                         await resp.aclose()
+                        release_slot()
 
                 return StreamingResponse(
-                    _stream_response(proxy_resp),
+                    _stream_response(proxy_resp, release_backend_slot),
                     status_code=status_code,
                     headers=response_headers,
                     media_type="text/event-stream",
                 )
 
-            out_body = await proxy_resp.aread()
+            try:
+                out_body = await proxy_resp.aread()
+            finally:
+                release_backend_slot()
             parsed_body = json.loads(out_body) if out_body else {}
             prompt_tokens, completion_tokens, reasoning_tokens, total_tokens = _extract_usage(parsed_body)
             get_metrics().record_request(
@@ -544,7 +611,10 @@ async def chat_completions(
         # error path – decide whether to fallback
         is_last = backend_index == len(backends) - 1
 
-        resp_body = await proxy_resp.aread()
+        try:
+            resp_body = await proxy_resp.aread()
+        finally:
+            release_backend_slot()
         limit_detected = looks_like_limit_error(proxy_resp.status_code, resp_body, config)
         fallbackable = should_fallback(proxy_resp.status_code, resp_body, False, policy, config)
         if fallbackable:

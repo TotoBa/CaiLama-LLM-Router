@@ -15,18 +15,21 @@ backends:
     base_url: "http://127.0.0.1:11435/v1"
     priority: 10
     enabled: true
+    max_concurrent_requests: 3
 
   ollama-vm-b:
     type: "openai_compatible"
     base_url: "http://127.0.0.1:11436/v1"
     priority: 20
     enabled: true
+    max_concurrent_requests: 3
 
   ollama-local:
     type: "openai_compatible"
     base_url: "http://127.0.0.1:11434/v1"
     priority: 30
     enabled: true
+    max_concurrent_requests: 1
 
 models:
   default:

@@ -62,6 +62,7 @@ backends:
     endpoint_path: "/chat/completions"   # Default, kann weggelassen werden
     priority: 10        # Niedriegere Zahl = höhere Priorität
     enabled: true
+    max_concurrent_requests: 1
 
   image-gen:
     type: "openai_compatible"
@@ -77,6 +78,11 @@ backends:
 - `api_key_env` ist optional; falls gesetzt, enthält es den Namen der Env-Variablen, nicht den Key selbst
 - `priority` sortiert: niedrigere Zahl = höhere Priorität
 - `enabled: false` deaktiviert das Backend komplett
+- `max_concurrent_requests` ist optional und begrenzt gleichzeitig laufende
+  Requests pro Backend. Zusätzliche Requests warten im Router auf einen freien
+  Slot statt denselben Ollama-Host oder Cloud-Account zu überlasten. Für die
+  Dual-Ollama-Benchmark-Runtime gilt aktuell: Docker-Cloud-Backends je `3`,
+  Host-Ollama lokal `1`.
 
 ## Modelle (Aliases)
 
@@ -124,6 +130,11 @@ models:
   werden als eigene Aliase ueber `request_overrides.think` modelliert. Die
   operativen Aliase `default` und `kimi-cli-default` sind Router-Defaults und
   keine CaiLama-Benchmarkkandidaten.
+- Die VM-Dual-Ollama-Konfiguration setzt pro Cloud-Backend
+  `max_concurrent_requests: 3` und fuer den Host-Ollama
+  `max_concurrent_requests: 1`. Der Runner darf dadurch mehrere Cloud-Requests
+  parallel starten, ohne dass ein einzelner Ollama-Cloud-Account mehr als drei
+  gleichzeitige Requests erhaelt.
 - Der Translator ist eine eigene fachliche Rolle: `chess-translator` zeigt in
   der VM-Dual-Ollama-Beispielkonfiguration auf `ministral-3:3b-cloud`. CaiLama
   filtert diesen Rollenalias bei `--models auto` heraus, testet aber das

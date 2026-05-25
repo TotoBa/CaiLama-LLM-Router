@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 
 import pytest
@@ -32,6 +33,11 @@ backends:
     base_url: https://api.anthropic.com/v1
     api_key_env: ANTHROPIC_API_KEY
     priority: 20
+  limited:
+    type: openai_compatible
+    base_url: https://api.limited.example/v1
+    priority: 30
+    max_concurrent_requests: 1
 
 models:
   gpt-4o:
@@ -89,6 +95,11 @@ models:
       - openai
       - anthropic
     policy: cooldown
+  limited-model:
+    provider_model: limited-llm
+    backends:
+      - limited
+    policy: standard
 
 policies:
   standard:
@@ -538,6 +549,48 @@ async def test_chat_completions_recovered_backend_available_again(mock_client):
         assert second.json()["choices"][0]["message"]["content"] == "openai-recovered"
         assert openai_route.call_count == 2
         assert anthropic_route.call_count == 1
+
+
+async def test_chat_completions_respects_backend_concurrency_limit(mock_client):
+    active_requests = 0
+    max_active_requests = 0
+
+    async def limited_response(request):
+        nonlocal active_requests, max_active_requests
+        active_requests += 1
+        max_active_requests = max(max_active_requests, active_requests)
+        await asyncio.sleep(0.05)
+        active_requests -= 1
+        return Response(200, json={
+            "id": "chatcmpl-limited",
+            "object": "chat.completion",
+            "model": "limited-llm",
+            "choices": [{"message": {"role": "assistant", "content": "limited"}}],
+        })
+
+    with respx.mock:
+        route = respx.post("https://api.limited.example/v1/chat/completions").mock(
+            side_effect=limited_response
+        )
+
+        first, second = await asyncio.gather(
+            mock_client.post(
+                "/v1/chat/completions",
+                json={"model": "limited-model", "messages": [{"role": "user", "content": "Hi"}]},
+            ),
+            mock_client.post(
+                "/v1/chat/completions",
+                json={"model": "limited-model", "messages": [{"role": "user", "content": "Hi"}]},
+            ),
+        )
+        health = await mock_client.get("/health")
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert route.call_count == 2
+        assert max_active_requests == 1
+        assert health.json()["backends"]["limited"]["max_concurrent_requests"] == 1
+        assert health.json()["backends"]["limited"]["in_flight"] == 0
 
 
 async def test_chat_completions_all_backends_fail(mock_client):

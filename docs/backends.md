@@ -50,6 +50,11 @@ separaten persistenten Logins. Lokale Benchmarkmodelle laufen dagegen nicht in d
 Containern, sondern ueber den bestehenden Host-Ollama auf
 `127.0.0.1:11434`. Dadurch muessen lokale Modelle nur einmal geladen werden
 und die VM versucht nicht, zwei lokale Modelle parallel zu betreiben.
+Der Router kann pro Backend eine harte In-Flight-Grenze setzen:
+`max_concurrent_requests: 3` fuer jeden Docker-Ollama-Cloud-Ausgang und
+`max_concurrent_requests: 1` fuer Host-Ollama. Zusaetzliche Requests warten im
+Router auf einen freien Slot; dadurch bleibt die Account-/Host-Grenze auch bei
+parallel laufenden Benchmarks eingehalten.
 Ollamas lokale API ist standardmaessig nicht durch einen Bearer-Key
 abgesichert; ein Key wird nur fuer Client-/Router-Konventionen benoetigt, wenn
 eine vorgelagerte Schicht ihn verlangt.
