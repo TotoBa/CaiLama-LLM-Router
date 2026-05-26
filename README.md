@@ -214,6 +214,10 @@ logging:
 Für langsame lokale LLMs kann `runtime.request_timeout_seconds: null` gesetzt bleiben. Dann begrenzt der Router nur den Verbindungsaufbau, bricht eine laufende Antwort aber nicht wegen eines Read-Timeouts ab.
 
 Wenn alle sofort nutzbaren Backends mit Fehlern antworten, gibt der Router standardmaessig den letzten Backend-Fehler unveraendert an den Client zurueck. Das verhindert, dass Clients wie Kimi auf einen generischen Router-Fehler warten oder unklar weiterlaufen. Pro Policy kann das mit `return_last_error_on_exhausted_backends: false` deaktiviert werden.
+Clients sollen 429/5xx als retrybare Provider-/Backend-Fehler behandeln, wenn
+der konkrete Workflow lange Benchmarks ohne Abbruch fahren soll. Der Router
+bleibt dabei generisch und schreibt keine Schachlogik in Alias- oder
+Fallback-Regeln.
 
 Ein Modell kann gezielt nur auf einem Backend angeboten werden, z.B. `backends: ["vm"]`. Fuer knappe Ollama-Hosts setzen die systemd-Beispiele `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_NUM_PARALLEL=1` und `OLLAMA_MAX_QUEUE=2`.
 

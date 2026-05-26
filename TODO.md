@@ -122,6 +122,11 @@ aufgenommen:
   Host-Ollama `1`; `/health` zeigt Limit und aktuelle In-Flight-Zahl. Damit
   kann der CaiLama-Runner weiterhin parallel arbeiten, ohne einen einzelnen
   Ollama-Cloud-Account zu ueberlasten.
+  Update 2026-05-26: Beim abgebrochenen Rollenbenchmark lag der sichtbare
+  Korrekturbedarf nicht im Router, sondern in CaiLama-/Master-Prompt- und
+  Feedbackfeldern sowie Search-RAG-Basisdaten. Routerseitig bleibt wichtig:
+  429/500/503 duerfen als Provider-/Backend-Fehler klar und secretfrei
+  weitergegeben werden; CaiLama retryt diese Fehler im Benchmarkpfad.
 - [x] Thinking-Mode-Benchmarkvarianten vorbereiten: `ModelRouteConfig`
   unterstuetzt jetzt `request_overrides`, damit Ollama-kompatible
   Requestfelder wie `think: false`, `think: true`, `think: "low"`,
