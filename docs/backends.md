@@ -200,3 +200,15 @@ policies:
     max_backend_failures_before_cooldown: 2
     backend_cooldown_seconds: 300
 ```
+
+## Benchmark-Modellaliase (`--models auto`)
+
+CaiLama liest fuer Benchmark-Laeufe die Kandidatenliste aus dem Router-Endpoint
+`/v1/models`. Dabei werden operative Aliase wie `default`, `kimi-cli-default` und
+`chess-*` standardmaessig ausgeschlossen.
+
+Damit ein voller Cloud-Benchmark alle gewuenschten Modelle erreicht, muessen die
+jeweiligen **Benchmark-Aliase** in der lokalen Router-Konfiguration sichtbar sein –
+nicht nur die schachspezifischen Rollenaliase. Echte Konfigurationen sind
+gitignored und nur lokal verfuegbar; im Repository liegen nur Beispiel- und
+Musterdateien (z. B. `configs/router.vm-dual-ollama.example.yaml`).
